@@ -1,0 +1,112 @@
+{
+  "projectType": "saas",
+  "projectName": "TripLoom",
+  "projectDescription": "AI-assisted travel planner for searching flights, tracking status, planning itineraries, and managing trips.",
+  "theme": "almond",
+  "primaryColor": "#0EA5E9",
+  "lightColor": "#7DD3FC",
+  "darkColor": "#0284C7",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/trip-planning",
+              "guides/flight-search",
+              "guides/itinerary-builder",
+              "guides/ai-assistant",
+              "guides/group-travel",
+              "guides/finance-tracking"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/flights",
+              "features/hotels",
+              "features/itinerary",
+              "features/transit",
+              "features/destinations"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "features/ai-planner",
+              "features/group-collaboration",
+              "features/budget-management"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Frontend APIs",
+            "pages": [
+              "api/flights",
+              "api/transit",
+              "api/destinations"
+            ]
+          },
+          {
+            "group": "Backend APIs",
+            "pages": [
+              "api/ai-chat",
+              "api/ai-planner",
+              "api/conversations"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Flight search & booking with SerpAPI Google Flights",
+    "Real-time flight status tracking with FlightAware AeroAPI",
+    "Day-by-day itinerary builder with drag-and-drop",
+    "AI-powered trip planning assistant using OpenAI GPT",
+    "Transit routing with Google Maps integration",
+    "Group travel management with shared itineraries",
+    "Multi-currency budget tracking and finance management",
+    "Destination and place search"
+  ],
+  "publicApiSurface": [
+    "POST /api/flights/serp/search - Search for flights",
+    "POST /api/flights/serp/booking-options - Get booking options",
+    "POST /api/flights/serp/explore - Explore flight destinations",
+    "GET /api/flights/status - Track flight status",
+    "POST /api/transit/suggest - Get transit suggestions",
+    "POST /api/transit/places/search - Search for places",
+    "POST /api/destinations/search - Search destinations",
+    "POST /v1/ai/chat - AI chat for trip assistance",
+    "POST /v1/ai/planner/chat - AI planner chat",
+    "GET /v1/ai/conversations/:tripId - List conversations",
+    "GET /v1/ai/conversations/:conversationId/messages - List messages",
+    "POST /v1/ai/context/refresh - Refresh AI context"
+  ]
+}
