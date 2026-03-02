@@ -1,0 +1,243 @@
+---
+title: Flight search and booking
+description: Search flights with multi-city support, track flight status, and save booking options
+---
+
+TripLoom provides comprehensive flight search, status tracking, and booking management for your trips.
+
+## Search capabilities
+
+<CardGroup cols={2}>
+  <Card title="One-way flights" icon="plane">
+    Search direct and connecting flights between any two airports
+  </Card>
+  <Card title="Round-trip flights" icon="plane-arrival">
+    Two-step booking flow: select outbound, then view return options
+  </Card>
+  <Card title="Multi-city trips" icon="route">
+    Chain up to 6 flight legs for complex itineraries
+  </Card>
+  <Card title="Flight status lookup" icon="radar">
+    Real-time flight information by number and date
+  </Card>
+</CardGroup>
+
+## How flight search works
+
+### One-way and round-trip
+
+Search for flights using IATA airport codes. The platform fetches results from Google Flights via SerpAPI.
+
+**Request example**:
+```json
+{
+  "origin": "YYZ",
+  "destination": "BER",
+  "departure_date": "2026-06-15",
+  "return_date": "2026-06-22",
+  "adults": 2
+}
+```
+
+**Response structure**:
+```json
+{
+  "ok": true,
+  "offers": [
+    {
+      "id": "serp-0-token123",
+      "totalAmount": "850",
+      "totalCurrency": "USD",
+      "owner": {
+        "name": "Lufthansa",
+        "iataCode": "LH"
+      },
+      "bookUrl": "https://www.google.com/travel/flights?...",
+      "departureToken": "token_for_return_flights",
+      "slices": [
+        {
+          "origin": {
+            "name": "Toronto Pearson International Airport",
+            "iataCode": "YYZ"
+          },
+          "destination": {
+            "name": "Berlin Brandenburg Airport",
+            "iataCode": "BER"
+          },
+          "duration": "8h 30m",
+          "segments": [
+            {
+              "operatingCarrier": {
+                "name": "Lufthansa",
+                "iataCode": "LH"
+              },
+              "flightNumber": "LH470",
+              "departingAt": "2026-06-15T18:00:00",
+              "arrivingAt": "2026-06-16T08:30:00",
+              "origin": {
+                "name": "Toronto Pearson International Airport",
+                "iataCode": "YYZ"
+              },
+              "destination": {
+                "name": "Berlin Brandenburg Airport",
+                "iataCode": "BER"
+              },
+              "duration": "8h 30m"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+<Note>
+Round-trip searches use a two-step flow: first select an outbound flight, then the platform fetches return options using the `departureToken` from your selected outbound offer.
+</Note>
+
+### Multi-city search
+
+Build complex itineraries with up to 6 legs. Each leg requires origin, destination, and departure date.
+
+```json
+{
+  "slices": [
+    {
+      "origin": "JFK",
+      "destination": "LHR",
+      "departure_date": "2026-07-01"
+    },
+    {
+      "origin": "LHR",
+      "destination": "CDG",
+      "departure_date": "2026-07-08"
+    },
+    {
+      "origin": "CDG",
+      "destination": "JFK",
+      "departure_date": "2026-07-15"
+    }
+  ],
+  "adults": 1
+}
+```
+
+## Flight status tracking
+
+Look up live flight information by flight number and departure date. The platform checks AeroAPI (FlightAware) and falls back to Aviationstack.
+
+**Endpoint**: `POST /api/flights/status`
+
+**Request**:
+```json
+{
+  "flight_number": "AC123",
+  "departure_date": "2026-06-15"
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "flight": {
+    "flightNumber": "AC123",
+    "airline": "Air Canada",
+    "airlineLogoUrl": "https://www.gstatic.com/flights/airline_logos/70px/AC.png",
+    "routeFrom": "YYZ",
+    "routeTo": "LHR",
+    "departureAirportName": "Toronto Pearson International Airport",
+    "arrivalAirportName": "London Heathrow Airport",
+    "departureLocal": "6:00 PM",
+    "arrivalLocal": "6:30 AM",
+    "departureTimezone": "America/Toronto",
+    "arrivalTimezone": "Europe/London",
+    "duration": "7h 30m",
+    "terminalGate": "Dep T1 G42 · Arr T2",
+    "stops": 0
+  }
+}
+```
+
+<Tip>
+The status API auto-fills airline, route, times, timezone, and gate information when available. Use this to quickly add confirmed flights to your trip.
+</Tip>
+
+## Filtering and sorting results
+
+The flights UI includes:
+
+- **Airline filter**: Show only flights from a specific carrier
+- **Max price filter**: Set an upper price limit
+- **Sortable columns**: Route, date, departure time, arrival time, duration, stops, cost, airline
+
+## Booking options
+
+For SerpAPI results with a `bookingToken`, resolve the direct booking URL:
+
+**Endpoint**: `POST /api/flights/serp/booking-options`
+
+**Request**:
+```json
+{
+  "booking_token": "token_from_offer"
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "url": "https://www.google.com/travel/flights/booking?...",
+  "post_data": null
+}
+```
+
+<Info>
+Most offers include a `bookUrl` that links directly to Google Flights with the flight pre-selected. Use the booking-options endpoint when you need the exact POST data for programmatic booking.
+</Info>
+
+## Saving flights to your trip
+
+Each searched flight can be saved with:
+
+- Route (origin → destination)
+- Departure and arrival times
+- Duration and stops
+- Airline and cost
+- Booking URL
+
+Saved flights persist in your trip and sync to the itinerary planner.
+
+## Explore mode
+
+Find cheap flights from your origin to multiple destinations across a date range.
+
+**Endpoint**: `POST /api/flights/serp/explore`
+
+**Request**:
+```json
+{
+  "origin": "YYZ",
+  "date_from": "2026-06-01",
+  "date_to": "2026-06-07",
+  "adults": 1
+}
+```
+
+The API searches up to 5 default destinations (JFK, LHR, CDG, YYZ, LAX) or a single specified destination, returning the cheapest option for each date.
+
+<Note>
+Explore mode is limited to 14 dates and returns only the best offer per destination per date. Use this to find the most affordable travel window.
+</Note>
+
+## API configuration
+
+Flight search requires:
+
+- `SERPAPI_API_KEY` (or `SERP_API_KEY`) for search and booking options
+- `AERO_API_KEY` (or `AEROAPI_KEY`) for status lookup (primary)
+- `FLIGHT_STATUS_API_KEY` (or `AVIATIONSTACK_API_KEY`) for status lookup (fallback)
+
+Without these keys, the respective features return a 503 service unavailable error.

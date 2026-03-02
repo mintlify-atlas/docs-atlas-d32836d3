@@ -1,0 +1,217 @@
+---
+title: Use the AI assistant for trip planning
+description: Get context-aware recommendations and answers from TripLoom AI
+---
+
+## Overview
+
+TripLoom AI is a conversational assistant that understands your trip context and provides tailored recommendations.
+
+**Key features:**
+- Page-aware context (knows what you're viewing)
+- Trip data integration (accesses your flights, budget, itinerary)
+- Multi-turn conversations (remembers chat history)
+- Degraded mode handling (works even with partial data)
+
+<Note>
+  TripLoom AI is in beta. Recommendations may occasionally be inaccurate. Always verify critical information like flight times and prices.
+</Note>
+
+## Open the AI panel
+
+The AI assistant appears as a collapsible side panel:
+
+1. Navigate to any trip page (Overview, Flights, Itinerary, etc.)
+2. Look for the **TripLoom AI** toggle in the page header or sidebar
+3. Click to expand the AI panel
+4. The panel slides in from the right (360px width on desktop, full screen on mobile)
+
+### Panel layout
+
+- **Header** - TripLoom AI branding with beta badge
+- **Chat area** - Message history with user and assistant bubbles
+- **Input field** - Multi-line textarea for your questions
+- **Send button** - Submit your message (or press Cmd/Ctrl + Enter)
+
+## Ask questions
+
+Type your question in the input field and press **Send** or hit **Cmd+Enter** (Mac) / **Ctrl+Enter** (Windows).
+
+### Example prompts
+
+**On Overview page:**
+- "What is my next best step?"
+- "How complete is my trip?"
+- "What am I missing?"
+
+**On Flights page:**
+- "Find the cheapest nonstop option"
+- "Should I book now or wait?"
+- "What's the best layover airport for this route?"
+
+**On Itinerary page:**
+- "Suggest activities for Day 3"
+- "Is my schedule too packed?"
+- "Where should I eat dinner on Day 5?"
+
+**On Finance page:**
+- "Am I on budget?"
+- "What categories should I cut back on?"
+- "When will I exceed my budget at this pace?"
+
+<Tip>
+  Be specific about what you need. Instead of "Help with flights," ask "Find me the fastest flight under $800."
+</Tip>
+
+## Understanding AI responses
+
+The assistant's messages appear in white bubbles aligned to the left.
+
+**Response structure:**
+1. **Direct answer** - Clear, actionable guidance
+2. **Reasoning** - Why the AI suggests this approach
+3. **Next steps** - What to do based on the answer (when applicable)
+
+### Context used
+
+After each response, the AI shows a **Context used** section with:
+- **Page key** - Which page you're on (e.g., "flights", "itinerary")
+- **Page title** - Trip name or page heading
+- **Page details** - Structured data from the current view
+- **Sources** - External data fetched (if any)
+  - Source name
+  - Status (success, partial, degraded)
+  - Fetch timestamp
+  - Details or error messages
+
+This transparency lets you verify what information the AI used to generate its answer.
+
+<Note>
+  The AI only accesses data from your current trip. It cannot see other trips or user accounts.
+</Note>
+
+## Page context integration
+
+TripLoom AI reads the current page to provide relevant answers:
+
+### Overview page
+- Trip destination, dates, travelers
+- Progress percentage
+- Next best action
+- Missing items checklist
+- Recent activity log
+
+### Flights page
+- Saved flights
+- Current search filters
+- Selected outbound/return offers (if in round-trip flow)
+- Price and duration sorting
+
+### Itinerary page
+- Day-by-day schedule
+- Status breakdown (planned vs. to-do vs. finished)
+- Calendar view mode
+- Items in current filter
+
+### Finance page
+- Budget total and currency
+- Spent amount and remaining balance
+- Daily pace (actual vs. planned)
+- Expense breakdown by category
+- Guardrail status (on track, watch, over)
+
+<Tip>
+  Open the relevant page before asking domain-specific questions. The AI's answers are more accurate when it has the right context.
+</Tip>
+
+## Multi-turn conversations
+
+The AI remembers your chat history within a session:
+
+**Example conversation:**
+
+1. User: "What's my budget status?"
+2. AI: "You're at 68% of budget with 40% of trip remaining. You're on track."
+3. User: "Should I plan another expensive dinner?"
+4. AI: "You have $320 remaining for food. A $60 dinner fits comfortably within your pace."
+
+The AI references previous messages to avoid repetition and maintain context.
+
+<Warning>
+  Conversations reset when you:
+  - Refresh the page
+  - Navigate to a different trip
+  - Close and reopen the AI panel
+  
+  Start a new conversation for unrelated questions.
+</Warning>
+
+## Degraded mode
+
+If external data sources fail (e.g., flight search APIs), the AI operates in **degraded mode**:
+
+- Continues answering based on your saved trip data
+- Shows a yellow warning: "Live data is partially unavailable. Recommendations may be less accurate."
+- Lists which sources failed in the Context used section
+
+**What works in degraded mode:**
+- Reviewing saved flights, itinerary, expenses
+- Calculating budget pacing from existing data
+- General trip planning advice
+
+**What doesn't work:**
+- Live flight price comparisons
+- Real-time availability checks
+- External API-dependent suggestions
+
+<Note>
+  Degraded mode ensures you can still use the AI even during API outages. Always verify time-sensitive data like flight prices independently.
+</Note>
+
+## Best practices
+
+### Ask one question at a time
+
+**Good:** "What's the cheapest flight option?"
+
+**Avoid:** "What's the cheapest flight and should I book it now and what hotel do you recommend?"
+
+Multi-part questions split the AI's focus. Ask follow-ups instead.
+
+### Reference your trip data
+
+The AI knows your trip details, so you can ask:
+- "How many days do I have left?" (not "I'm going from May 1-7, how many days?")
+- "Show me my saved flights" (not "Show flights from YYZ to LHR")
+
+### Verify critical information
+
+Always double-check:
+- Flight times and prices on the airline website
+- Budget calculations with your actual receipts
+- Itinerary times against venue operating hours
+
+The AI provides guidance, not guaranteed accuracy.
+
+### Use specific constraints
+
+Include your preferences:
+- "Suggest a restaurant under $50/person"
+- "Find flights with max 1 stop"
+- "Plan 3 hours for the museum"
+
+## Limitations
+
+**The AI cannot:**
+- Book flights, hotels, or activities
+- Make payments or store payment information
+- Access external accounts (airline, hotel, etc.)
+- Modify your trip data (you must edit pages manually)
+- Remember conversations across sessions
+- Provide real-time updates (flight delays, cancellations)
+
+**Use the AI for:**
+- Planning advice and recommendations
+- Analyzing your trip data
+- Answering "what if" scenarios
+- Prioritizing next steps

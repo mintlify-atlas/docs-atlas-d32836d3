@@ -1,0 +1,191 @@
+---
+title: Welcome to TripLoom
+description: AI-assisted travel planning that transforms how you research, book, and manage trips
+---
+
+<img
+  className="block"
+  src="/images/hero.png"
+  alt="TripLoom Hero"
+/>
+
+## Transform trip planning with AI assistance
+
+TripLoom is an AI-powered travel platform that helps you plan, book, and manage trips with intelligent automation. Search flights with SerpAPI Google Flights integration, build day-by-day itineraries with drag-and-drop, track real-time flight status, and collaborate with group travelers—all in one place.
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get from signup to your first trip in under 5 minutes
+  </Card>
+  <Card
+    title="Authentication"
+    icon="lock"
+    href="/authentication"
+  >
+    Set up Supabase authentication with email/password and OAuth
+  </Card>
+  <Card
+    title="Flight search"
+    icon="plane"
+    href="/features/flights"
+  >
+    Integrate SerpAPI for live Google Flights search and booking
+  </Card>
+  <Card
+    title="Itinerary builder"
+    icon="calendar-days"
+    href="/features/itinerary"
+  >
+    Build dynamic day-by-day plans with drag-and-drop calendar
+  </Card>
+</CardGroup>
+
+## Core features
+
+### Flight search & booking
+
+Powered by **SerpAPI Google Flights**, TripLoom surfaces best flight options across one-way, round-trip, and multi-city routes. Compare offers by price, duration, and stops—then save your selection to the trip.
+
+```typescript /home/daytona/workspace/source/frontend/app/api/flights/serp/search/route.ts
+export async function POST(request: Request) {
+  const apiKey = getSerpApiKey()
+  if (!apiKey) {
+    return NextResponse.json(
+      { ok: false, error: "SerpAPI flight search unavailable. Set SERPAPI_API_KEY in env." },
+      { status: 503 }
+    )
+  }
+
+  // Parse request body with slices, adults, cabin_class
+  const body = await request.json()
+  const slices = body.slices // [{ origin, destination, departure_date }]
+  
+  // Call SerpAPI
+  const params = new URLSearchParams({
+    engine: "google_flights",
+    api_key: apiKey,
+    departure_id: slices[0].origin,
+    arrival_id: slices[0].destination,
+    outbound_date: slices[0].departure_date,
+  })
+  
+  const res = await fetch(`${SERPAPI_BASE}?${params.toString()}`)
+  const data = await res.json()
+  
+  return NextResponse.json({ ok: true, offers: data?.best_flights ?? [] })
+}
+```
+
+### Real-time flight status
+
+Track any flight by number and date. TripLoom fetches live departure/arrival times, gate info, delays, and airline logos.
+
+### Day-by-day itinerary builder
+
+Drag-and-drop events across a calendar, assign time blocks (morning/afternoon/evening), and export to Google Calendar in batch.
+
+```typescript /home/daytona/workspace/source/frontend/lib/trips.ts
+export type TripItineraryItem = {
+  id: string
+  tripId: string
+  dayIndex: number
+  timeBlock: ItineraryTimeBlock // "morning" | "afternoon" | "evening"
+  status: ItineraryStatus // "planned" | "todo" | "finished"
+  category: ItineraryCategory // "sightseeing" | "food" | "commute" | etc.
+  title: string
+  locationLabel: string
+  startTimeLocal?: string
+  endTimeLocal?: string
+  notes?: string
+  sortOrder: number
+}
+```
+
+### AI-powered trip assistant
+
+Chat with the AI to generate itinerary suggestions, find transit routes, or refine your plan based on preferences.
+
+### Transit routing with Google Maps
+
+Search and save transit routes between destinations with estimated duration, cost, and transfer details.
+
+### Group travel management
+
+Invite travelers, manage approvals, and split expenses with equal or custom allocation.
+
+### Multi-currency budget tracking
+
+Set a trip budget, log expenses by category (flights, hotels, food, activities), and track spending pace with automated guardrails.
+
+```typescript /home/daytona/workspace/source/frontend/lib/trips.ts
+export type TripFinance = {
+  budgetTotal: number
+  currency: string
+  groupModeEnabled: boolean
+  groupSize: number
+  exchangeRates: Record<string, number>
+  expenses: TripExpense[]
+  automation: TripFinanceAutomation
+}
+```
+
+## Technology stack
+
+<CardGroup cols={3}>
+  <Card title="Next.js 15" icon="react">
+    App Router with server and client components
+  </Card>
+  <Card title="Supabase" icon="database">
+    PostgreSQL database with Row Level Security and real-time subscriptions
+  </Card>
+  <Card title="TypeScript" icon="code">
+    End-to-end type safety across frontend and API routes
+  </Card>
+  <Card title="SerpAPI" icon="magnifying-glass">
+    Google Flights search integration
+  </Card>
+  <Card title="Tailwind CSS" icon="paintbrush">
+    Utility-first styling with custom design system
+  </Card>
+  <Card title="React Big Calendar" icon="calendar">
+    Drag-and-drop itinerary scheduling
+  </Card>
+</CardGroup>
+
+## Get started
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/yourusername/triploom.git
+    cd triploom/frontend
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Configure environment">
+    Create `.env.local` and add your Supabase and SerpAPI keys:
+    ```bash
+    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+    SERPAPI_API_KEY=your-serpapi-key
+    ```
+  </Step>
+  <Step title="Run the development server">
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000)
+  </Step>
+</Steps>
+
+<Note>
+  Need help getting started? Check out the [Quickstart guide](/quickstart) for a complete walkthrough.
+</Note>

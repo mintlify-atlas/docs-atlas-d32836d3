@@ -1,0 +1,498 @@
+---
+title: Budget tracking and finance management
+description: Track expenses, monitor spending pace, and use automation guardrails to stay on budget
+---
+
+TripLoom's finance system provides comprehensive budget tracking with real-time guardrails, multi-currency support, and automated spending pace analysis.
+
+## Budget overview
+
+The finance page displays five key metrics at the top:
+
+| Metric | Description | Source |
+|--------|-------------|--------|
+| **Total Budget** | Full trip budget in base currency | `finance.budgetTotal` |
+| **Spent** | Sum of all expenses converted to base currency | Sum of `expense.amount * exchangeRate` |
+| **Remaining** | Budget minus spent (can be negative) | `budgetTotal - spent` |
+| **Daily Pace** | Actual daily spending vs planned | `spent / daysElapsed` vs `budgetTotal / totalDays` |
+| **Per Person** | Estimated cost per traveler | `budgetTotal / travelerCount` |
+
+From `frontend/components/trips/pages/finance-page-content.tsx:504-544`.
+
+## Setting up your budget
+
+<Steps>
+  <Step title="Open budget settings">
+    Navigate to Finance → Budget Settings (gear icon).
+  </Step>
+  
+  <Step title="Enter budget total">
+    Input your total trip budget. This is the baseline for all guardrail calculations.
+  </Step>
+  
+  <Step title="Select currency">
+    Choose your base currency (e.g., CAD, USD, EUR). All totals and guardrails use this currency.
+    
+    <Note>
+    The currency field accepts any 3-letter ISO code. Make sure it matches your primary spending currency.
+    </Note>
+  </Step>
+  
+  <Step title="Set buffer percentage">
+    Enter a buffer (e.g., 10%) to allow for unexpected costs. This is currently informational and not used in calculations.
+  </Step>
+  
+  <Step title="Save budget">
+    Click **Save Budget** to persist your settings.
+  </Step>
+</Steps>
+
+### Multi-currency conversion
+
+TripLoom supports expenses in multiple currencies. You must set exchange rates manually for accurate totals.
+
+**How it works**:
+
+1. System detects all currencies used in your expenses
+2. Displays conversion rate inputs for each foreign currency
+3. Converts each expense to base currency: `expense.amount * exchangeRate`
+4. Sums all converted expenses for budget totals
+
+From `frontend/components/trips/pages/finance-page-content.tsx:267-274`:
+
+```typescript
+const toBaseCurrency = React.useCallback(
+  (expense: Pick<TripExpense, "amount" | "currency">): number => {
+    const expenseCurrency = (expense.currency || finance.currency).toUpperCase()
+    const rate = finance.exchangeRates[expenseCurrency] || 1
+    return expense.amount * rate
+  },
+  [finance.currency, finance.exchangeRates]
+)
+```
+
+**Setting exchange rates**:
+
+<Steps>
+  <Step title="Navigate to budget settings">
+    Open Finance → Budget Settings.
+  </Step>
+  
+  <Step title="Find conversion rates section">
+    Scroll to "Conversion rates to [BASE_CURRENCY]".
+  </Step>
+  
+  <Step title="Enter rates">
+    For each foreign currency used in expenses, enter the conversion rate to your base currency.
+    
+    Example: If base currency is CAD and you have EUR expenses, enter the EUR to CAD rate (e.g., 1.48).
+  </Step>
+</Steps>
+
+<Note>
+Missing rates default to 1:1. A warning banner appears if any currencies lack conversion rates.
+</Note>
+
+## Tracking expenses
+
+Expenses are organized by date with support for multiple payers, categories, and split modes.
+
+### Adding an expense (quick mode)
+
+<Steps>
+  <Step title="Enter basic details">
+    In the **Expense Ledger** section:
+    - **Date**: Select the expense date
+    - **Title**: Short description (e.g., "Lunch at Markthalle")
+    - **Amount**: Numeric value
+    - **Category**: Select from Flights, Hotels, Transit, Food, Activities
+  </Step>
+  
+  <Step title="Save expense">
+    Click **Save** to add the expense with default settings (equal split, base currency, primary traveler as payer).
+  </Step>
+</Steps>
+
+### Adding an expense (advanced mode)
+
+Click **Advanced fields** to access:
+
+- **Payer**: Name of person who paid
+- **Currency**: Expense currency (if different from base)
+- **Split mode**: Equal or Custom
+- **Notes**: Optional context (e.g., "Includes tip")
+- **Custom splits**: Allocate exact amounts per traveler (only if split mode = Custom)
+
+From `frontend/components/trips/pages/finance-page-content.tsx:949-1028`.
+
+### Expense validation
+
+Before saving, the system validates:
+
+- Date is not empty
+- Title is not empty
+- Payer name is not empty
+- Currency is not empty
+- Amount is greater than 0
+- **Custom split sum equals total amount** (within 1 cent)
+
+From `frontend/components/trips/pages/finance-page-content.tsx:308-325`.
+
+## Major expense categories
+
+The finance page breaks down spending by category with visual budget share indicators.
+
+**Supported categories**:
+
+| Category | Description | Use Case |
+|----------|-------------|----------|
+| **Flights** | Airfare and flight-related fees | All flight bookings |
+| **Hotels** | Accommodation costs | Nightly hotel rates (use Hotel Split tool for multi-day stays) |
+| **Transit** | Local transportation | Trains, buses, taxis, metro passes |
+| **Food** | Meals and dining | Estimated or actual meal costs |
+| **Activities** | Tours, tickets, experiences | Museum entry, guided tours, events |
+
+From `frontend/components/trips/pages/finance-page-content.tsx:49-55`.
+
+### Budget share visualization
+
+Each category shows:
+
+- **Progress bar**: Visual representation of category spend vs total budget
+- **Spent amount**: Total in base currency
+- **Percentage**: Share of total budget
+
+From `frontend/components/trips/pages/finance-page-content.tsx:276-284`:
+
+```typescript
+const majorCategoryTotals = React.useMemo(() => {
+  return majorExpenseCategories.map((category) => {
+    const spent = finance.expenses
+      .filter((expense) => expense.category === category.value)
+      .reduce((sum, expense) => sum + toBaseCurrency(expense), 0)
+    const share = summary.budgetTotal > 0 ? Math.min(100, (spent / summary.budgetTotal) * 100) : 0
+    return { ...category, spent, share }
+  })
+}, [finance.expenses, summary.budgetTotal, toBaseCurrency])
+```
+
+## Automation guardrails
+
+TripLoom's guardrail system monitors spending pace and provides proactive alerts.
+
+### Guardrail status
+
+Three status levels:
+
+| Status | Meaning | Tone |
+|--------|---------|------|
+| **On Track** | Spending pace is within budget | Green |
+| **Watch** | Approaching budget limits | Amber |
+| **Over** | Exceeded budget or pace threshold | Red |
+
+From `frontend/components/trips/pages/finance-page-content.tsx:58-67`.
+
+### Enabling guardrails
+
+<Steps>
+  <Step title="Open guardrails settings">
+    Navigate to Finance → Guardrails (sparkles icon).
+  </Step>
+  
+  <Step title="Enable automation">
+    Toggle **Enable guardrails** to activate monitoring.
+  </Step>
+  
+  <Step title="Set thresholds">
+    - **Warn %**: Percentage of daily budget pace that triggers "Watch" status (default: 100%)
+    - **Critical %**: Percentage that triggers "Over" status (default: 120%)
+    
+    Example: With a $100/day planned pace, setting Warn to 110% triggers Watch at $110/day actual pace.
+  </Step>
+  
+  <Step title="Configure alerts">
+    - **Daily pace alerts**: Show toast notifications when status changes
+    - **Cutback suggestions**: AI recommends which categories to reduce
+  </Step>
+</Steps>
+
+### How guardrails calculate status
+
+From `lib/trips.ts` (implementation inferred from usage):
+
+1. **Planned daily pace**: `budgetTotal / totalDays`
+2. **Actual daily pace**: `totalSpent / daysElapsed`
+3. **Pace ratio**: `actualDaily / plannedDaily`
+4. **Status**:
+   - `on_track`: Pace ratio < `warnAtPercent / 100`
+   - `watch`: Pace ratio >= `warnAtPercent / 100` and < `criticalAtPercent / 100`
+   - `over`: Pace ratio >= `criticalAtPercent / 100`
+
+### Projected exceed day
+
+If current pace continues, guardrails estimate the day you'll exceed your budget.
+
+From `frontend/components/trips/pages/finance-page-content.tsx:741-744`:
+
+```typescript
+{guardrail.projectedExceedDay
+  ? `May exceed by Day ${guardrail.projectedExceedDay}.`
+  : "Pace is within budget range."}
+```
+
+### Guardrail insights
+
+The finance page displays actionable insights based on status:
+
+- **On Track**: "Pace is healthy. Consider setting aside buffer for unexpected costs."
+- **Watch**: "Daily spending is 15% above plan. Review food and activities categories."
+- **Over**: "Budget exceeded by $200. Suggest cutbacks: reduce dining budget by $50/day."
+
+From `frontend/components/trips/pages/finance-page-content.tsx:874-884`.
+
+## Hotel cost allocator
+
+The **Hotel Split** tool simplifies multi-day hotel expense entry.
+
+### Use case
+
+You book a hotel for 5 nights at $600 total. Instead of manually creating 5 expenses, the allocator:
+
+1. Divides $600 into 5 equal daily expenses ($120/night)
+2. Creates one expense per day with proper date offsets
+3. Labels each as "Hotel stay 1/5", "Hotel stay 2/5", etc.
+
+### How to use
+
+<Steps>
+  <Step title="Open hotel split">
+    Navigate to Finance → Hotel Split.
+  </Step>
+  
+  <Step title="Enter stay details">
+    - **Full stay price**: Total cost (e.g., $600)
+    - **Price entered for**: Select pricing mode:
+      - **One person**: Price is per person, will multiply by traveler count
+      - **X people**: Price is for X people, enter people count
+      - **Entire booking total**: Price is final total for all travelers
+  </Step>
+  
+  <Step title="Configure split range">
+    - **Nights**: Number of nights stayed
+    - **Days**: Number of days (usually nights + 1)
+    - **Split across**: Choose "Nights" or "Days" to determine expense count
+    - **Start date**: First day of hotel stay
+  </Step>
+  
+  <Step title="Apply split">
+    Click **Apply hotel split**. The system:
+    - Deletes any existing auto-generated hotel expenses
+    - Creates new expenses evenly split by day/night
+    - Uses cent-level precision to avoid rounding errors
+  </Step>
+</Steps>
+
+### Allocation logic
+
+From `frontend/components/trips/pages/finance-page-content.tsx:432-491`:
+
+```typescript
+const totalCents = Math.round(bookingTotal * 100)
+const baseCents = Math.floor(totalCents / splitCount)
+const remainder = totalCents - baseCents * splitCount
+
+for (let index = 0; index < splitCount; index++) {
+  const cents = baseCents + (index < remainder ? 1 : 0)
+  const amount = cents / 100
+  // Create expense with amount
+}
+```
+
+This ensures:
+
+- Total split exactly equals booking total (no rounding loss)
+- Remainder cents are distributed to first N expenses
+
+## Expense ledger
+
+All expenses are displayed in a chronological table grouped by date.
+
+### Table columns
+
+- **Date**: Expense date (short format)
+- **Title**: Expense description
+- **Category**: Flights, Hotels, Transit, Food, Activities
+- **Payer**: Name of person who paid
+- **Split**: Equal or Custom (with split count)
+- **Status**: Normal or High-impact (if expense exceeds daily budget)
+- **Amount**: Cost in original currency
+- **Actions**: Edit and Delete buttons
+
+From `frontend/components/trips/pages/finance-page-content.tsx:1039-1119`.
+
+### Day subtotals
+
+Each date group shows a subtotal in base currency:
+
+```
+Jun 15, 2025 • Day subtotal $245.00
+```
+
+This helps identify high-spend days at a glance.
+
+### High-impact expenses
+
+Expenses that exceed the planned daily budget (excluding flights) are flagged with a "High-impact" badge.
+
+From `frontend/components/trips/pages/finance-page-content.tsx:1063-1067`:
+
+```typescript
+const impact =
+  expense.category !== "flights" &&
+  summary.plannedDaily > 0 &&
+  expense.amount > summary.plannedDaily
+```
+
+## Editing and deleting expenses
+
+### Edit workflow
+
+<Steps>
+  <Step title="Click Edit">
+    In the expense ledger, click the **Edit** button for the target expense.
+  </Step>
+  
+  <Step title="Modify fields">
+    The expense form populates with current values. Modify any field (date, title, amount, category, payer, currency, split mode, notes).
+  </Step>
+  
+  <Step title="Update expense">
+    Click **Update** to save changes. The `updatedAt` timestamp is refreshed.
+  </Step>
+</Steps>
+
+### Delete workflow
+
+<Steps>
+  <Step title="Click Delete">
+    In the expense ledger, click the **Delete** icon (trash) for the target expense.
+  </Step>
+  
+  <Step title="Confirm deletion">
+    A toast confirms the expense was removed. Changes are immediate.
+  </Step>
+</Steps>
+
+From `frontend/components/trips/pages/finance-page-content.tsx:380-404`.
+
+## AI finance guidance
+
+The AI copilot on the finance page provides budget-aware recommendations.
+
+### Finance-specific AI behavior
+
+From `backend/internal/ai/prompt.go:101-103`:
+
+> **Finance**: Focus on budget adherence, major cost drivers, and practical cutback levers. Quantify impact when possible; avoid vague financial advice.
+
+**Example prompts**:
+
+- "Am I over budget?"
+- "Which category is driving my spending?"
+- "How can I cut $100/day?"
+
+### AI context for finance
+
+The AI receives:
+
+- Trip budget total and currency
+- All expenses with amounts and categories
+- Current spending pace (actual vs planned)
+- Guardrail status and projected exceed day
+
+From `backend/internal/ai/service.go:358-361`:
+
+```go
+case "finance":
+    sources = append(sources, Source{Name: "finance_guardrail", Status: "ok", FetchedAt: now, Detail: "Computed from DB trip totals in this phase."})
+    data["financeGuardrail"] = map[string]any{"status": "watch", "note": "Placeholder until full finance tables are integrated."}
+```
+
+## Best practices
+
+- **Set budget early**: Establish your budget and currency before adding expenses
+- **Configure exchange rates immediately**: Avoid 1:1 defaults by setting rates as soon as you use a foreign currency
+- **Use hotel allocator for multi-day stays**: Saves time and ensures accurate daily splits
+- **Enable guardrails from day 1**: Proactive monitoring prevents budget overruns
+- **Review high-impact expenses weekly**: Identify and adjust overspending categories
+- **Leverage AI for cutback suggestions**: Ask the AI which categories have the most reduction potential
+- **Keep payer names consistent**: Use the same name format (e.g., "Sarah" not "Sarah K." then "Sarah") for easier settlement tracking
+
+## Technical details
+
+### Expense data structure
+
+From `lib/trips.ts` (types inferred from usage):
+
+```typescript
+type TripExpense = {
+  id: string
+  tripId: string
+  date: string // YYYY-MM-DD
+  title: string
+  amount: number
+  category: ExpenseCategory
+  payerName: string
+  currency: string
+  splitMode: SplitMode
+  splits?: TripExpenseSplit[]
+  notes?: string
+  createdAt: string // ISO 8601
+  updatedAt: string // ISO 8601
+}
+
+type TripExpenseSplit = {
+  travelerId: string
+  amount: number
+}
+```
+
+### Finance summary calculation
+
+The `getFinanceSummary` function computes:
+
+- `budgetTotal`: From trip finance settings
+- `spent`: Sum of all expenses converted to base currency
+- `remaining`: `budgetTotal - spent`
+- `plannedDaily`: `budgetTotal / totalDays`
+- `actualDaily`: `spent / daysElapsed`
+- `perPersonEstimate`: `budgetTotal / travelerCount`
+- `missingRateCurrencies`: List of currencies without conversion rates
+
+### Guardrail automation triggers
+
+When finance automation is enabled, the system runs guardrail checks:
+
+1. **On every expense save**: Recalculates status and projected exceed day
+2. **On manual check**: User clicks "Run Check Now"
+3. **Status change detection**: Compares previous status to new status, triggers toast if changed
+
+From `frontend/components/trips/pages/finance-page-content.tsx:227-241`:
+
+```typescript
+React.useEffect(() => {
+  const prev = previousStatusRef.current
+  const next = finance.automation.lastStatus
+  previousStatusRef.current = next
+  if (!finance.automation.showDailyPaceAlerts || !prev || !next || prev === next) return
+  if (next === "watch") {
+    toast.warning("Budget pacing moved to Watch.")
+    return
+  }
+  if (next === "over") {
+    toast.error("Budget pacing moved to Over.")
+    return
+  }
+  toast.success("Budget pacing is back on track.")
+}, [finance.automation.lastStatus, finance.automation.showDailyPaceAlerts])
+```

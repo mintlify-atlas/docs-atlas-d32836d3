@@ -1,0 +1,373 @@
+---
+title: Track budgets and expenses
+description: Set budgets, log expenses, and monitor spending with automated guardrails and pace tracking
+---
+
+## Set your budget
+
+Establish spending limits before tracking expenses.
+
+<Steps>
+  <Step title="Open budget settings">
+    Navigate to **Finance** and click **Budget Settings**.
+  </Step>
+  
+  <Step title="Enter total budget">
+    Type your total trip budget (e.g., 3500).
+  </Step>
+  
+  <Step title="Set currency">
+    Enter your base currency as a 3-letter code (e.g., CAD, USD, EUR). This currency is used for all totals and guardrails.
+  </Step>
+  
+  <Step title="Configure buffer">
+    Set a buffer percentage (default: 10%). This adds a safety margin to your planned daily pace.
+  </Step>
+  
+  <Step title="Save budget">
+    Click **Save Budget**. Your budget summary cards update immediately.
+  </Step>
+</Steps>
+
+<Note>
+  The budget total should include all major expenses: flights, hotels, food, activities, and transit. Leave room for unexpected costs.
+</Note>
+
+## Budget summary cards
+
+The Finance page displays five key metrics:
+
+### Total budget
+Your overall spending limit in the base currency.
+
+### Spent
+Sum of all logged expenses, converted to base currency using exchange rates.
+
+### Remaining
+Budget minus spent. Turns red when negative (over budget).
+
+### Daily pace
+- **Actual** - Your current spending per day (spent ÷ days elapsed)
+- **Planned** - Target spending per day (budget ÷ total trip days)
+- **Color coding:**
+  - Green: On track (actual ≤ planned)
+  - Amber: Watch (actual > planned but < critical threshold)
+  - Red: Over (actual exceeds critical threshold)
+
+### Per person
+Total budget ÷ group size (or travelers if group mode disabled).
+
+<Tip>
+  Check the Daily Pace card each day to stay aware of spending trends. Small daily overages compound quickly over a week-long trip.
+</Tip>
+
+## Add expenses
+
+Log purchases as they occur to maintain accurate tracking.
+
+### Quick add
+
+Use the inline expense form for fast entry:
+
+1. **Date** - Select transaction date (defaults to today)
+2. **Title** - Description (e.g., "Lunch at Borough Market")
+3. **Amount** - Cost (numbers only, no currency symbol)
+4. **Category** - Choose from 5 major categories:
+   - Flights
+   - Hotels
+   - Transit
+   - Food (Estimated)
+   - Activities
+5. Click **Save**
+
+The expense appears in the ledger immediately.
+
+### Advanced fields
+
+Click **Advanced fields** to access:
+
+- **Payer** - Who made the payment (default: "Primary traveler")
+- **Currency** - Transaction currency (if different from base)
+- **Split mode** - Equal or Custom split among travelers
+- **Notes** - Additional context or receipt details
+
+**Custom split:**
+- Opens input fields for each traveler
+- Enter individual amounts (must sum to total)
+- Used for uneven expense sharing
+
+<Warning>
+  Ensure custom split amounts add up exactly to the expense total. TripLoom validates this on save and shows an error if there's a mismatch.
+</Warning>
+
+## Expense ledger
+
+All logged expenses display in chronological order, grouped by date.
+
+### Ledger columns
+
+- **Date** - Transaction date (short format: "Jan 15, 2026")
+- **Title** - Expense description
+- **Category** - Major category badge
+- **Payer** - Who paid
+- **Split** - Equal or Custom (with participant count)
+- **Status** - Normal or High-impact (exceeds daily pace)
+- **Amount** - Cost in original currency
+- **Actions** - Edit and Delete buttons
+
+### Day subtotals
+
+Each date group shows:
+- Full date label (e.g., "Wed, Jan 15, 2026")
+- Day subtotal in base currency
+
+### Edit an expense
+
+1. Click **Edit** in the Actions column
+2. The expense form populates with existing data
+3. Modify any field
+4. Click **Update**
+
+Edits update the expense in place and recalculate all totals.
+
+### Delete an expense
+
+1. Click **Delete** (trash icon) in the Actions column
+2. Confirm deletion
+3. The expense removes from the ledger
+4. Budget summary updates to reflect the change
+
+<Note>
+  Deletions are permanent. If you delete an expense by mistake, re-enter it manually. Undo is not available.
+</Note>
+
+## Major expense breakdown
+
+The **Major expenses** table visualizes spending by category:
+
+- **Category** - Flights, Hotels, Transit, Food, Activities
+- **Budget share** - Visual bar showing percentage of total budget consumed
+- **Spent** - Total amount in base currency
+
+Use this to identify which categories are eating into your budget most.
+
+<Tip>
+  If one category's bar exceeds 50% and you're early in the trip, consider cutting back in that area or reallocating budget from other categories.
+</Tip>
+
+## Currency conversion
+
+Handle multi-currency expenses with exchange rates.
+
+### Set exchange rates
+
+<Steps>
+  <Step title="Open budget settings">
+    Click **Budget Settings** → scroll to **Conversion rates**.
+  </Step>
+  
+  <Step title="View currencies in use">
+    TripLoom lists all currencies found in your expenses plus the base currency.
+  </Step>
+  
+  <Step title="Enter rate">
+    For each non-base currency, enter the exchange rate to your base currency. Example:
+    - Base: CAD
+    - USD: 1.35 (1 USD = 1.35 CAD)
+    - EUR: 1.48 (1 EUR = 1.48 CAD)
+  </Step>
+  
+  <Step title="Save">
+    Rates save automatically on blur. Totals recalculate immediately.
+  </Step>
+</Steps>
+
+<Warning>
+  Missing exchange rates default to 1:1, which causes inaccurate totals. The Finance page shows a warning banner listing currencies with missing rates.
+</Warning>
+
+### When to update rates
+
+Update rates:
+- Before your trip (use current market rates)
+- Weekly during long trips (if rates fluctuate significantly)
+- After a major expense in a new currency
+
+You do not need daily updates unless dealing with volatile currencies.
+
+## Group mode settings
+
+For trips with multiple people sharing costs:
+
+<Steps>
+  <Step title="Enable group mode">
+    In **Budget Settings**, toggle **Group mode** on.
+  </Step>
+  
+  <Step title="Set group size">
+    Enter the number of people splitting expenses (can differ from total travelers).
+  </Step>
+  
+  <Step title="Save">
+    Click **Save Budget**. Per-person calculations now use group size instead of traveler count.
+  </Step>
+</Steps>
+
+Group mode affects:
+- Per-person budget display
+- Equal split division (amount ÷ group size)
+- Traveler list in custom split fields
+
+<Note>
+  Group size is independent of the trip's traveler count. Use this if some travelers (e.g., children) are not splitting costs equally.
+</Note>
+
+## Guardrails and automation
+
+Automated checks help you stay on budget.
+
+### Enable guardrails
+
+<Steps>
+  <Step title="Open guardrails popover">
+    Click **Guardrails** (sparkles icon) in the Finance toolbar.
+  </Step>
+  
+  <Step title="Toggle automation">
+    Turn on **Enable guardrails**.
+  </Step>
+  
+  <Step title="Set thresholds">
+    - **Warn %** - When to show "Watch" status (default: 110%)
+    - **Critical %** - When to show "Over" status (default: 125%)
+    
+    These percentages apply to your daily pace vs. planned pace.
+  </Step>
+  
+  <Step title="Enable alerts">
+    - **Daily pace alerts** - Toast notifications when status changes
+    - **Cutback suggestions** - AI-generated advice on which categories to reduce
+  </Step>
+  
+  <Step title="Run check">
+    Click **Run Check Now** to manually trigger guardrail analysis.
+  </Step>
+</Steps>
+
+### Guardrail statuses
+
+**On Track (Green)**
+- Actual daily pace ≤ Planned daily pace × (100% + buffer%)
+- Spending is sustainable
+- No action needed
+
+**Watch (Amber)**
+- Actual daily pace > Planned × Warn%
+- Pace is elevated but recoverable
+- Review recent expenses and consider small cutbacks
+
+**Over (Red)**
+- Actual daily pace > Planned × Critical%
+- Spending is unsustainable
+- Immediate action required to avoid exceeding budget
+
+<Tip>
+  Guardrails run automatically when you add expenses. Check the **Guardrail Insights** box above the expense form for real-time suggestions.
+</Tip>
+
+## Guardrail insights
+
+The insights box displays:
+- Current status badge (On Track / Watch / Over)
+- Icon (checkmark or alert triangle)
+- Up to 3 actionable suggestions:
+  - Projected day when budget will exceed (if trending over)
+  - Categories consuming the most budget
+  - Recommended cutbacks (if enabled)
+
+**Example suggestions:**
+- "You may exceed budget by Day 5 at current pace."
+- "Food expenses are 40% of budget. Consider lower-cost meals."
+- "Cut back on Activities or Transit to stay on track."
+
+## Hotel cost allocator
+
+Spread hotel booking costs across multiple days.
+
+### Why use the allocator
+
+Hotels charge upfront for the entire stay, but the cost is incurred daily. Allocating lets you:
+- See daily spending more accurately
+- Avoid a large spike on check-in day
+- Match expenses to the days when the hotel was used
+
+### Allocate hotel cost
+
+<Steps>
+  <Step title="Open hotel split">
+    Click **Hotel Split** in the Finance toolbar.
+  </Step>
+  
+  <Step title="Enter full stay price">
+    Type the total amount charged for your hotel stay.
+  </Step>
+  
+  <Step title="Select pricing mode">
+    - **One person** - Price is per person (multiplies by traveler count)
+    - **X people** - Price is for X people (enter count)
+    - **Entire booking total** - Price is final total (no multiplication)
+  </Step>
+  
+  <Step title="Set nights and days">
+    - **Nights** - Number of nights stayed
+    - **Days** - Number of calendar days (usually nights + 1)
+  </Step>
+  
+  <Step title="Choose split method">
+    - **Nights** - Divide cost by nights (excludes checkout day)
+    - **Days** - Divide cost by days (includes checkout day)
+  </Step>
+  
+  <Step title="Set start date">
+    Enter the check-in date. The allocator creates one expense per night/day starting from this date.
+  </Step>
+  
+  <Step title="Apply">
+    Click **Apply hotel split**. Multiple hotel expenses appear in the ledger, each titled "Hotel stay 1/N", "Hotel stay 2/N", etc.
+  </Step>
+</Steps>
+
+<Note>
+  The allocator removes any previous auto-generated hotel expenses before creating new ones. Manual hotel entries are unaffected.
+</Note>
+
+### Example allocation
+
+**Inputs:**
+- Full stay price: $600
+- Mode: Entire booking total
+- Nights: 3
+- Split by: Nights
+- Start date: Jan 10
+
+**Result:**
+- Jan 10: Hotel stay 1/3 - $200
+- Jan 11: Hotel stay 2/3 - $200
+- Jan 12: Hotel stay 3/3 - $200
+
+Daily pace now reflects gradual hotel cost instead of a $600 spike on Jan 10.
+
+<Tip>
+  Use "Split by: Days" if your hotel charged for the checkout day. Otherwise, use "Split by: Nights" to exclude the final day.
+</Tip>
+
+## Export and reporting
+
+(Coming soon)
+
+Export features in development:
+- **CSV export** - Download expense ledger for spreadsheet analysis
+- **PDF report** - Printable summary with charts
+- **Category breakdown** - Detailed spending by category over time
+
+Check back after future releases for these capabilities.

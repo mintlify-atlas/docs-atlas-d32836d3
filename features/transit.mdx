@@ -1,0 +1,238 @@
+---
+title: Transit routing
+description: Plan local and intercity transit with Google Maps integration
+---
+
+The transit planner helps you map point-to-point routes using public transportation and save them to your trip.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Google Maps integration" icon="map">
+    Fetch real transit options with times and transfers
+  </Card>
+  <Card title="Manual entry" icon="edit">
+    Add routes without API lookup
+  </Card>
+  <Card title="Day-linked routing" icon="calendar-days">
+    Associate routes with specific trip days
+  </Card>
+  <Card title="Visual preview" icon="eye">
+    Embedded or static map for each route
+  </Card>
+</CardGroup>
+
+## How transit routing works
+
+### Step 1: Enter route details
+
+Specify:
+
+- **Day**: Which day of your trip (e.g. Day 3)
+- **From**: Origin (autocomplete via Google Places)
+- **To**: Destination (autocomplete via Google Places)
+- **Time filter**: "Leave at" or "Arrive by"
+- **Time**: Specific departure or arrival time (optional)
+
+If no time is set, the search defaults to 9:00 AM on the selected trip day.
+
+<Info>
+Transit searches use the trip start date + day index to calculate the exact date and weekday. This ensures route suggestions reflect real schedules.
+</Info>
+
+### Step 2: View suggestions
+
+The platform calls Google Directions API and returns up to 3 transit options, sorted by duration.
+
+**API request**:
+```json
+{
+  "origin": "Berlin Hauptbahnhof",
+  "destination": "Dresden Hauptbahnhof",
+  "day_index": 2,
+  "departure_time": "2026-06-16T09:00"
+}
+```
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "summaryLabel": "ICE 1556 + S-Bahn",
+      "durationMinutes": 132,
+      "estimatedCost": 45.5,
+      "currency": "EUR",
+      "transfers": 1,
+      "walkingMinutes": 8,
+      "departureTimeLocal": "2026-06-16T09:00:00",
+      "arrivalTimeLocal": "2026-06-16T11:12:00",
+      "providerRouteRef": "encoded_polyline_string",
+      "mode": "rail"
+    }
+  ]
+}
+```
+
+<Note>
+Cost estimates may be unavailable for some routes. When `estimatedCost` is `null`, the UI shows "Fare unavailable".
+</Note>
+
+### Step 3: Save or edit
+
+You can:
+
+- **Save selected route**: One-click save with all details auto-filled
+- **Use manual entry**: Switch to manual mode to adjust duration, cost, mode, or notes
+
+## Transit modes
+
+- **Subway**: Metro and underground systems
+- **Bus**: Local and long-distance buses
+- **Tram**: Streetcars and light rail
+- **Rail**: Trains (regional, intercity, high-speed)
+- **Ferry**: Water transport
+- **Walk + Transit**: Mixed walking and public transport
+- **Other**: Any other mode
+
+The mode is auto-detected from Google's response or manually selected.
+
+## Manual entry fields
+
+- **Day**: Trip day (1 to totalDays)
+- **From / To**: Origin and destination labels
+- **Mode**: Transit type
+- **Duration**: Travel time in minutes
+- **Estimated cost**: Fare (0 or higher)
+- **Currency**: ISO code (e.g. USD, EUR)
+- **Departure time**: Local datetime
+- **Arrival time**: Local datetime
+- **Transfers**: Number of connections
+- **Walking minutes**: Time spent walking
+- **Reference link**: URL to route info
+- **Notes**: Stop details, platform numbers, payment info
+
+<Tip>
+Use manual entry when you have confirmed transit tickets or need to save a route not available via Google Maps (e.g. private shuttle).
+</Tip>
+
+## Saved routes display
+
+Routes are grouped by day and sorted by departure time. Each saved route shows:
+
+- From → To with departure and arrival times
+- Badge indicating source (Google Maps or Manual)
+- Mode, duration, cost, and transfers
+- Reference link (if provided)
+- Actions: Preview, Edit, Delete
+
+**Example**:
+
+```
+Day 2 (Thursday)
+
+Berlin Hauptbahnhof → Dresden Hauptbahnhof
+9:00 AM → 11:12 AM
+[Google Maps]
+
+Rail • 132 min • EUR 45.50 • Transfers: 1
+
+[Preview] [Edit] [Delete]
+```
+
+## Route map preview
+
+Click "Preview" on any saved route to load the map. The platform shows:
+
+1. **Static map** (if `providerRouteRef` polyline is available): Rendered route line on Google Static Maps
+2. **Embedded directions** (fallback): Google Maps Embed with transit mode
+
+**Static map URL**:
+```
+https://maps.googleapis.com/maps/api/staticmap?size=900x520&key=YOUR_KEY&path=weight:5|color:0x1e88e5|enc:POLYLINE_STRING
+```
+
+**Embed URL**:
+```
+https://www.google.com/maps/embed/v1/directions?key=YOUR_KEY&origin=Berlin+Hauptbahnhof&destination=Dresden+Hauptbahnhof&mode=transit
+```
+
+<Info>
+Map preview requires `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY` in your environment. Without it, the platform shows a "Map key missing" alert.
+</Info>
+
+## Bulk import from notes
+
+Paste route pairs in the bulk text area to quickly import multiple routes:
+
+**Format**:
+```
+Berlin - Dresden
+Dresden - Prague
+Prague - Vienna
+```
+
+The parser detects lines matching `LOCATION - LOCATION` and creates manual routes with:
+
+- Mode: Other
+- Duration: 60 minutes (default)
+- Cost: 0 (default)
+- Day: Currently selected day
+
+You can edit each imported route afterward.
+
+<Tip>
+Include URLs in your bulk text. The parser associates the nearest URL with each route as a reference link.
+</Tip>
+
+## API configuration
+
+Transit routing requires:
+
+- `GOOGLE_MAPS_API_KEY` (or `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY`) for route suggestions
+- `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY` for map preview
+
+Without these keys:
+
+- Route suggestions return a 503 error
+- Map preview shows a configuration alert
+- Manual entry still works
+
+## Example saved route object
+
+```json
+{
+  "id": "uuid-1234",
+  "tripId": "trip-uuid",
+  "dayIndex": 2,
+  "fromLabel": "Berlin Hauptbahnhof",
+  "toLabel": "Dresden Hauptbahnhof",
+  "mode": "rail",
+  "durationMinutes": 132,
+  "departureTimeLocal": "2026-06-16T09:00:00",
+  "arrivalTimeLocal": "2026-06-16T11:12:00",
+  "estimatedCost": 45.5,
+  "currency": "EUR",
+  "provider": "google_maps",
+  "providerRouteRef": "encoded_polyline_here",
+  "transfers": 1,
+  "walkingMinutes": 8,
+  "notes": "Platform 12. Buy ticket at DB counter.",
+  "referenceUrl": "https://www.bahn.com/en/booking",
+  "createdAt": "2026-05-01T10:00:00Z",
+  "updatedAt": "2026-05-01T10:00:00Z"
+}
+```
+
+## Validation
+
+The platform validates:
+
+- From and To must be different locations
+- Day must be between 1 and trip total days
+- Duration must be greater than 0
+- Cost must be 0 or higher
+- Arrival time cannot be earlier than departure time
+
+Invalid routes cannot be saved.

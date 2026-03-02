@@ -1,0 +1,249 @@
+---
+title: Transit API endpoints
+description: Get transit route suggestions and search for places
+---
+
+## Suggest transit routes
+
+<Card title="POST /api/transit/suggest" icon="train">
+  Get transit route suggestions between two locations using Google Maps Directions API.
+</Card>
+
+### Request
+
+**Authentication:** None required (internal API)
+
+**Headers:**
+- `Content-Type`: application/json
+
+**Body parameters:**
+
+<ParamField body="origin" type="string" required>
+  Origin location (place name, address, or coordinates)
+</ParamField>
+
+<ParamField body="destination" type="string" required>
+  Destination location (place name, address, or coordinates)
+</ParamField>
+
+<ParamField body="departure_time" type="string">
+  Desired departure time in ISO 8601 format
+</ParamField>
+
+<ParamField body="arrival_time" type="string">
+  Desired arrival time in ISO 8601 format
+</ParamField>
+
+<ParamField body="day_index" type="number">
+  Day index for itinerary planning
+</ParamField>
+
+<Note>
+  Use either `departure_time` or `arrival_time`, not both.
+</Note>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of transit route options (up to 3, sorted by duration)
+  <Expandable title="TransitOption object">
+    <ResponseField name="summaryLabel" type="string">
+      Route summary (e.g., "M1 + L train")
+    </ResponseField>
+    <ResponseField name="durationMinutes" type="number">
+      Total journey duration in minutes
+    </ResponseField>
+    <ResponseField name="estimatedCost" type="number | null">
+      Estimated fare amount
+    </ResponseField>
+    <ResponseField name="currency" type="string">
+      Currency code (e.g., "USD")
+    </ResponseField>
+    <ResponseField name="transfers" type="number">
+      Number of transfers required
+    </ResponseField>
+    <ResponseField name="walkingMinutes" type="number">
+      Total walking time in minutes
+    </ResponseField>
+    <ResponseField name="departureTimeLocal" type="string">
+      Local departure time (ISO 8601 format, truncated to minutes)
+    </ResponseField>
+    <ResponseField name="arrivalTimeLocal" type="string">
+      Local arrival time (ISO 8601 format, truncated to minutes)
+    </ResponseField>
+    <ResponseField name="providerRouteRef" type="string">
+      Route reference (encoded polyline or identifier)
+    </ResponseField>
+    <ResponseField name="mode" type="string">
+      Primary transit mode: `subway`, `bus`, `tram`, `rail`, `ferry`, `walk_mix`, or `other`
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if `ok` is false
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/transit/suggest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "origin": "Times Square, New York",
+    "destination": "Brooklyn Bridge, New York",
+    "departure_time": "2026-03-15T09:00:00"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "summaryLabel": "Subway 1 + Walk",
+      "durationMinutes": 28,
+      "estimatedCost": 2.75,
+      "currency": "USD",
+      "transfers": 0,
+      "walkingMinutes": 8,
+      "departureTimeLocal": "2026-03-15T09:00",
+      "arrivalTimeLocal": "2026-03-15T09:28",
+      "providerRouteRef": "mx~fFppvbMjAv@...",
+      "mode": "walk_mix"
+    },
+    {
+      "summaryLabel": "Subway N + R",
+      "durationMinutes": 32,
+      "estimatedCost": 2.75,
+      "currency": "USD",
+      "transfers": 1,
+      "walkingMinutes": 5,
+      "departureTimeLocal": "2026-03-15T09:00",
+      "arrivalTimeLocal": "2026-03-15T09:32",
+      "providerRouteRef": "route-2",
+      "mode": "subway"
+    }
+  ]
+}
+```
+
+### Error responses
+
+<ResponseField name="ok" type="boolean">
+  `false` when error occurs
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error description
+</ResponseField>
+
+**Status codes:**
+- `400` - Missing origin/destination or invalid time parameters
+- `503` - Google Maps API key not configured
+- `502` - Google Maps API error or denied request
+- `500` - Internal server error
+
+**Special cases:**
+- Returns empty `data` array when no transit routes found (`ZERO_RESULTS`)
+
+---
+
+## Search transit places
+
+<Card title="GET /api/transit/places/search" icon="map-pin">
+  Autocomplete search for transit locations using Google Places API.
+</Card>
+
+### Request
+
+**Authentication:** None required (internal API)
+
+**Query parameters:**
+
+<ParamField query="q" type="string" required>
+  Search query (minimum 2 characters)
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of place suggestions (up to 8, excluding airports)
+  <Expandable title="TransitPlaceSuggestion object">
+    <ResponseField name="id" type="string">
+      Place ID (same as placeId)
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Primary place name
+    </ResponseField>
+    <ResponseField name="displayName" type="string">
+      Full formatted address/description
+    </ResponseField>
+    <ResponseField name="placeId" type="string">
+      Google Places ID
+    </ResponseField>
+    <ResponseField name="mainText" type="string">
+      Main text portion
+    </ResponseField>
+    <ResponseField name="secondaryText" type="string | null">
+      Secondary text (e.g., city, country)
+    </ResponseField>
+    <ResponseField name="types" type="array">
+      Array of place type strings
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example request
+
+```bash
+curl "https://your-domain.com/api/transit/places/search?q=central%20park"
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "ChIJ4zGFAZpYwokRGUGph3Mf37k",
+      "name": "Central Park",
+      "displayName": "Central Park, New York, NY, USA",
+      "placeId": "ChIJ4zGFAZpYwokRGUGph3Mf37k",
+      "mainText": "Central Park",
+      "secondaryText": "New York, NY, USA",
+      "types": ["park", "tourist_attraction", "point_of_interest", "establishment"]
+    },
+    {
+      "id": "ChIJOwg_06VPwokRYv534QaPC8g",
+      "name": "Grand Central Terminal",
+      "displayName": "Grand Central Terminal, New York, NY, USA",
+      "placeId": "ChIJOwg_06VPwokRYv534QaPC8g",
+      "mainText": "Grand Central Terminal",
+      "secondaryText": "New York, NY, USA",
+      "types": ["transit_station", "point_of_interest", "establishment"]
+    }
+  ]
+}
+```
+
+### Error responses
+
+**Status codes:**
+- `503` - Google Maps API key not configured
+- `502` - Google Places API error
+- `500` - Internal server error
+
+**Special cases:**
+- Returns empty `data` array for queries shorter than 2 characters

@@ -1,0 +1,245 @@
+---
+title: Search and book flights
+description: Find the best flight options using manual search, lookup tools, and saved flight tracking
+---
+
+## Manual flight search
+
+TripLoom offers flexible search modes for one-way, round-trip, and multi-city itineraries.
+
+### One-way search
+
+<Steps>
+  <Step title="Select trip type">
+    Click the **One way** button in the Manual flight search card.
+  </Step>
+  
+  <Step title="Enter route details">
+    - **From** - Type and select your departure airport from the dropdown
+    - **To** - Type and select your destination airport
+    - **Departure date** - Choose your travel date (min: today)
+    - **Passengers** - Select 1-5 adult passengers
+  </Step>
+  
+  <Step title="Search flights">
+    Click **Search flights**. Results appear below with sortable columns.
+  </Step>
+</Steps>
+
+<Note>
+  You must select airports from the dropdown suggestions. Entering free text without selection will show an error: "Please select an origin and destination from the dropdown."
+</Note>
+
+### Round-trip search
+
+Round-trip mode uses a two-step flow to find the best combinations.
+
+<Steps>
+  <Step title="Select round trip">
+    Click **Round trip** and enter route details:
+    - From/To airports
+    - Outbound date
+    - Return date (must be same day or after outbound)
+    - Passengers
+  </Step>
+  
+  <Step title="Search outbound flights">
+    Click **Search flights**. The **Outbound** tab displays departure options.
+  </Step>
+  
+  <Step title="Select outbound flight">
+    Click on a row to select it. The row highlights and the **Return** tab becomes active.
+  </Step>
+  
+  <Step title="View return flights">
+    Switch to the **Return** tab. TripLoom automatically loads return options that pair with your selected outbound flight.
+  </Step>
+  
+  <Step title="Select return flight">
+    Choose your return flight. The **Summary** tab activates.
+  </Step>
+  
+  <Step title="Review and save">
+    The Summary tab shows both flights. Click **Save Selection** to add both flights to your Saved Flights.
+  </Step>
+</Steps>
+
+<Tip>
+  Round-trip search finds optimized return options based on your outbound selection, often resulting in better pricing and connections.
+</Tip>
+
+### Multi-city search
+
+For complex itineraries with multiple destinations:
+
+1. Click **Multi city** in the search type selector
+2. Each leg shows three fields:
+   - **From** - Departure airport
+   - **To** - Arrival airport
+   - **Date** - Travel date
+3. Click **+ Add leg** to add up to 6 segments
+4. Click the trash icon to remove a leg (minimum 1 required)
+5. Set **Passengers** and click **Search flights**
+
+<Warning>
+  Multi-city search currently uses the first leg only. Full multi-segment support is coming in a future update.
+</Warning>
+
+## Sort and filter results
+
+Refine search results using the filters bar:
+
+### Sort options
+
+Click column headers to sort:
+- **Route** - Origin → Destination alphabetically
+- **Date** - Chronological departure date
+- **Departure** - Departure time (earliest to latest)
+- **Arrival** - Arrival time
+- **Duration** - Flight duration (shortest to longest)
+- **Stops** - Number of stops (fewest first)
+- **Cost** - Price (lowest to highest)
+- **Airline** - Carrier name alphabetically
+
+Click the same header again to reverse sort direction (ascending ↔ descending).
+
+### Filter options
+
+**Airline filter**
+- Dropdown shows all carriers in current results
+- Select an airline to show only their flights
+- Choose "All" to clear the filter
+
+**Max price filter**
+- Enter a maximum price amount
+- Results update automatically to show only flights at or below that price
+- Leave blank for no price limit
+
+## View flight details
+
+Each search result row displays:
+
+- **Route** - YYZ → LHR format
+- **Date** - Departure date
+- **Departure** - Local departure time
+- **Arrival** - Local arrival time  
+- **Duration** - Total flight time (e.g., "7h 20m")
+- **Stops** - "Nonstop", "1 stop", or "2 stops"
+- **Cost** - Total price with currency (e.g., "850 CAD")
+- **Airline** - Carrier name with logo
+
+### Expand for stop details
+
+Flights with layovers show a chevron icon. Click to expand and view:
+- Stop airport codes
+- Layover duration at each stop
+
+## Save flight selections
+
+Track your preferred flight options:
+
+<Steps>
+  <Step title="Select a flight">
+    Click a row in the search results. The row highlights to indicate selection.
+  </Step>
+  
+  <Step title="Save the flight">
+    Click **Save Flight** (or **Save Selection** for round-trip). A confirmation message appears.
+  </Step>
+  
+  <Step title="View saved flights">
+    Scroll to the **Saved Flights** card at the top of the page. Your flight appears with full details.
+  </Step>
+</Steps>
+
+### Manage saved flights
+
+The Saved Flights card shows all flights you've bookmarked:
+
+- **Source** - "outbound", "inbound", or search type
+- **Route** - Full route with airports
+- **Date** - Departure date
+- **Departure/Arrival** - Local times
+- **Duration** - Flight time
+- **Stops** - Layover count and details
+- **Airline** - Carrier name
+- **Cost** - Total price
+
+**Actions:**
+- **Edit** - Update the departure date
+- **Delete** - Remove from saved flights
+- **Book now** - Opens booking URL in new tab (when available)
+
+<Note>
+  Saved flights persist across sessions and sync to your account. You can compare multiple options before making your final booking.
+</Note>
+
+## Flight number lookup
+
+If you already booked a flight, use the lookup tool to track details:
+
+### Lookup a flight
+
+<Steps>
+  <Step title="Enter flight details">
+    In the **Inbound Flight Lookup** card:
+    - **Flight number** - Enter airline code + number (e.g., "AC123")
+    - **Departure date** - Select the departure date
+  </Step>
+  
+  <Step title="Run lookup">
+    Click **Lookup flight**. TripLoom fetches real-time flight data.
+  </Step>
+  
+  <Step title="Review auto-filled data">
+    The system displays:
+    - Airline name and logo
+    - Route (departure → arrival airports with full names)
+    - Local departure and arrival times
+    - Timezone information
+    - Flight duration
+    - Number of stops
+    - Terminal and gate (when available)
+  </Step>
+  
+  <Step title="Edit if needed">
+    Click **Edit** to manually adjust any field:
+    - Airline, route codes, times, duration
+    - Terminal/gate information
+    - Number of stops
+    - Cost (optional, in USD)
+    - Stop details (airport and layover duration)
+  </Step>
+  
+  <Step title="Confirm">
+    Click **Confirm** to save the flight to your inbound flights list.
+  </Step>
+</Steps>
+
+### Add stop details
+
+For flights with layovers:
+
+1. In edit mode, scroll to **Stop Details and Layovers**
+2. Click **+ Add stop** for each layover
+3. Enter:
+   - **Stop airport** - Layover airport code
+   - **Layover** - Duration (e.g., "1h 20m")
+4. Click the trash icon to remove a stop entry
+
+<Tip>
+  The flight lookup tool auto-fills most details, but you can override any field for flights not found in the database or to add booking-specific information like seat assignments.
+</Tip>
+
+## Booking integration
+
+When a saved flight includes a booking URL:
+
+1. The **Book now** button appears in the Saved Flights card
+2. Click to open the airline or booking site in a new tab
+3. Complete your purchase on the external site
+4. Return to TripLoom to update your flight status or add confirmation details
+
+<Warning>
+  TripLoom does not process payments. All bookings complete on airline or travel agency websites. Always verify pricing and availability before purchasing.
+</Warning>

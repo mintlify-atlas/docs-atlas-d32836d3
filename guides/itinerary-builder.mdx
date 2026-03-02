@@ -1,0 +1,267 @@
+---
+title: Build day-by-day itineraries
+description: Plan your daily activities with the interactive calendar and drag-and-drop itinerary builder
+---
+
+## Itinerary overview
+
+The Itinerary page combines a visual calendar with detailed item management.
+
+### Page layout
+
+- **Header** - Shows trip duration, date range, timezone, and save controls
+- **Toolbar** - Quick actions for adding items, exporting events, and filtering
+- **Calendar** - Month, week, day, or agenda view with drag-and-drop
+- **Item list** - All itinerary items with edit and delete options
+
+<Note>
+  The itinerary uses your trip's inferred timezone. All times are displayed in local destination time.
+</Note>
+
+## Add itinerary items
+
+### Quick add from calendar
+
+Click any empty slot on the calendar:
+
+1. TripLoom opens the item dialog pre-filled with:
+   - **Day** - Inferred from the calendar date you clicked
+   - **Time block** - Morning, afternoon, or evening based on the hour
+   - **Start/End times** - Default window for that time block
+2. Enter title and location (both required)
+3. Adjust times, category, and other fields as needed
+4. Click **Add item**
+
+### Manual add
+
+Use the **+ Add Item** button for more control:
+
+<Steps>
+  <Step title="Open dialog">
+    Click **+ Add Item** in the toolbar. The item form appears.
+  </Step>
+  
+  <Step title="Enter required fields">
+    - **Title** - Activity or event name (e.g., "Berlin Core Sights")
+    - **Location** - Where this takes place (e.g., "Berlin, Germany")
+  </Step>
+  
+  <Step title="Set timing">
+    - **Day** - Select from dropdown (Day 1, Day 2, etc.)
+    - **Time block** - Choose Start Of Day, Midday Focus, or Evening Wind-Down
+    - **Start time** - Exact start time (datetime picker)
+    - **End time** - Exact end time (must be after start)
+  </Step>
+  
+  <Step title="Choose category and status">
+    - **Status** - Planned, To Do, or Finished
+    - **Category** - Select from 10 categories (see Categories section)
+  </Step>
+  
+  <Step title="Add optional details">
+    - **Location Link** - Website URL for venue/activity
+    - **Google Maps Link** - Direct link to location
+    - **Commuting Details** - Transit info (e.g., "ICE 726, 07:42 to 11:02")
+    - **Notes** - Tickets, queue tips, reminders
+  </Step>
+  
+  <Step title="Save">
+    Click **Add item**. The event appears on the calendar and in the item list.
+  </Step>
+</Steps>
+
+<Warning>
+  Start and end times determine the day and time block automatically. If you set times that span midnight, TripLoom assigns the item to the day containing the start time.
+</Warning>
+
+## Itinerary categories
+
+Choose from 10 color-coded categories:
+
+- **Outbound Flight** - Departure flights (blue)
+- **Inbound Flight** - Return flights (cyan)
+- **Commute** - Local transportation (sky blue)
+- **Activities** - Tours, experiences, events (emerald green)
+- **Games** - Sports, entertainment (violet)
+- **Food** - Restaurants, cafes, markets (amber)
+- **Sightseeing** - Landmarks, museums (rose)
+- **Shopping** - Stores, malls (fuchsia)
+- **Rest** - Downtime, hotel, relaxation (slate gray)
+- **Other** - Anything else (zinc gray)
+
+Categories help you visualize your day's balance at a glance in the calendar.
+
+## Status tracking
+
+Track progress with three status levels:
+
+- **Planned** - Tentative or unconfirmed activity
+- **To Do** - Confirmed, needs completion
+- **Finished** - Completed during the trip
+
+Filter the calendar by status using the buttons in the toolbar:
+- **All** - Show every item
+- **Planned** - Show only planned items
+- **To Do** - Show only to-do items
+- **Finished** - Show only finished items
+
+<Tip>
+  Use status filters to focus on what's next. During your trip, switch to "To Do" view to see today's confirmed activities.
+</Tip>
+
+## Calendar views
+
+Switch between four calendar layouts:
+
+### Month view
+
+- Overview of the entire trip
+- See all events across weeks
+- Best for high-level planning
+
+### Week view
+
+- Hourly breakdown of 7 days
+- Drag and resize events
+- Default view for most trips
+
+### Day view
+
+- Single day with hour-by-hour detail
+- Ideal for mobile devices
+- Automatic mobile fallback (screens < 768px)
+
+### Agenda view
+
+- List format sorted chronologically
+- No drag-and-drop (use for review only)
+- Shows start/end times in table rows
+
+<Note>
+  Your view preference saves to the URL query parameter. Refresh the page and you'll return to the same view.
+</Note>
+
+## Drag and drop scheduling
+
+Reorganize your itinerary visually (Month, Week, Day views only):
+
+### Move an event
+
+1. Click and hold an event block
+2. Drag to a new time slot
+3. Release to drop
+4. TripLoom updates:
+   - Start and end times
+   - Day index
+   - Time block
+
+### Resize an event
+
+1. Hover over the bottom edge of an event
+2. Drag the edge up or down
+3. Release when the duration is correct
+4. End time updates automatically
+
+<Tip>
+  Drag-and-drop changes are immediate but not saved until you click **Save Changes**. You can drag multiple items, then save all at once or click **Discard** to undo.
+</Tip>
+
+## Edit and delete items
+
+### Edit an item
+
+<Tabs>
+  <Tab title="From calendar">
+    Click an event block in the calendar to open the edit dialog.
+  </Tab>
+  
+  <Tab title="From item list">
+    Scroll to the **Current Items** section and click **Edit** next to any item.
+  </Tab>
+</Tabs>
+
+The edit dialog pre-fills all fields. Make changes and click **Update item**.
+
+### Delete an item
+
+1. In the **Current Items** list, click **Delete** (trash icon)
+2. The item removes from the calendar and list immediately
+3. Click **Save Changes** to persist the deletion, or **Discard** to restore it
+
+<Warning>
+  Deletions are part of the draft state. You must click **Save Changes** to permanently remove items. If you discard changes, deleted items reappear.
+</Warning>
+
+## Save and discard changes
+
+Itinerary edits work in draft mode:
+
+1. Add, edit, move, or delete items
+2. The **Unsaved changes** badge appears in the header
+3. Click **Save Changes** to persist all edits
+4. Or click **Discard** to revert to the last saved state
+
+**Validation on save:**
+- Title and location must not be empty
+- Day index must be within trip range (1 to total days)
+- End time must be after start time
+
+If validation fails, an error toast appears and changes are not saved.
+
+## Export to Google Calendar
+
+Share your itinerary with your personal calendar:
+
+### Export all events
+
+<Steps>
+  <Step title="Click export">
+    Click **Export All Events** in the toolbar.
+  </Step>
+  
+  <Step title="Approve popups">
+    TripLoom opens one browser tab per event. Each tab loads the Google Calendar "Add Event" form pre-filled with:
+    - Event title
+    - Location
+    - Start and end times (converted to your local timezone)
+    - Description (notes, commute details, links)
+  </Step>
+  
+  <Step title="Confirm each event">
+    In each tab, review the details and click **Save** in Google Calendar.
+  </Step>
+</Steps>
+
+<Note>
+  Export opens all events simultaneously with a 280ms delay between tabs. If your browser blocks popups, use the **Copy Event Links** button instead.
+</Note>
+
+### Copy event links
+
+For popup blockers:
+
+1. Click **Copy Event Links**
+2. A dialog appears with one link per event
+3. Click **Open** or **Copy** for each link
+4. Paste links into your browser to open the Google Calendar form
+
+<Tip>
+  Export works best with 10 or fewer events. For larger itineraries, export day-by-day using the Day view filter.
+</Tip>
+
+## View current items
+
+The **Current Items** section lists all itinerary entries:
+
+- **Title** - Activity name
+- **Location** - Where it takes place
+- **Times** - Start and end in `YYYY-MM-DDTHH:MM` format
+- **Status** - Badge showing Planned/To Do/Finished
+- **Actions** - Edit and Delete buttons
+
+Items sort by:
+1. Day index (ascending)
+2. Time block (morning → afternoon → evening)
+3. Sort order (auto-assigned)
+
+This ensures your list matches the chronological flow of your trip.

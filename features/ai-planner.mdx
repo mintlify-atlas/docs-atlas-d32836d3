@@ -1,0 +1,214 @@
+---
+title: AI-powered trip planning
+description: Use TripLoom's AI copilot to plan trips faster with context-aware recommendations
+---
+
+TripLoom's AI copilot provides real-time, context-aware guidance across every stage of your trip. From initial planning to day-by-day itinerary support, the AI understands your trip constraints and delivers practical next steps.
+
+## How the AI works
+
+The AI copilot is **read-only and context-aware**. It analyzes your trip data (destination, dates, travelers, budget) and the current page you're viewing to provide targeted recommendations. It never modifies your bookings or expenses—only you can make those changes.
+
+<Note>
+The AI assistant is available on every trip page. Open the AI panel from the bottom-right corner to start a conversation.
+</Note>
+
+### Page-aware assistance
+
+The copilot adapts its guidance based on which page you're viewing:
+
+<Accordion title="Overview page">
+  - Suggests the highest-impact next action based on trip progress
+  - Identifies missing essentials (flights, hotels, budget)
+  - Recommends prioritized checklist items
+</Accordion>
+
+<Accordion title="Flights page">
+  - Provides live flight status when you share a flight number and date (e.g., "AC123 2025-06-15")
+  - Compares price-time tradeoffs for different routes
+  - Flags tight connection risks
+</Accordion>
+
+<Accordion title="Transit page">
+  - Fetches bus and rail options when you use the format "from Berlin to Munich"
+  - Compares reliability, duration, and transfers
+  - Recommends best route based on your trip timeline
+</Accordion>
+
+<Accordion title="Finance page">
+  - Analyzes budget adherence and major cost drivers
+  - Suggests practical cutback levers when over budget
+  - Quantifies impact of daily spending pace
+</Accordion>
+
+<Accordion title="Itinerary page">
+  - Proposes realistic day sequencing to reduce backtracking
+  - Flags overpacked days and suggests buffer time
+  - Validates feasibility of planned activities
+</Accordion>
+
+<Accordion title="Group page">
+  - Recommends decisions that reduce coordination overhead
+  - Suggests explicit owner and deadline for next actions
+  - Helps clarify approval workflows
+</Accordion>
+
+## Agent planner (trip creation)
+
+When you start a new trip, the **Agent planner** helps you build an initial draft through conversation.
+
+<Steps>
+  <Step title="Share trip basics">
+    Tell the agent your destination, travel dates (or month), traveler count, and must-do experiences.
+    
+    Example: "Planning a solo trip to Tokyo in April, budget around $3000, want to visit museums and try authentic ramen."
+  </Step>
+  
+  <Step title="Review draft plan">
+    The agent generates a structured draft including:
+    - Destination and country
+    - Start and end dates (inferred from conversation)
+    - Traveler count
+    - Budget estimate
+    - Activities list
+    - Day-by-day itinerary skeleton
+    
+    The draft appears in real-time as `PlannerDraft` in the response.
+  </Step>
+  
+  <Step title="Refine and apply">
+    Ask follow-up questions to adjust pacing, budget, or activities. Once satisfied, apply the draft to create your trip.
+  </Step>
+</Steps>
+
+### What the agent infers
+
+The planner extracts structured data from your conversation:
+
+- **Destination**: Inferred from phrases like "to Paris" or "in Barcelona"
+- **Dates**: Detects YYYY-MM-DD patterns or month references
+- **Travelers**: Recognizes "solo", "2 people", "family of 4"
+- **Budget**: Parses amounts like "budget $2000" or "spend 1500"
+- **Activities**: Pulls from must-do experiences you mention
+
+## AI system prompts
+
+TripLoom uses **model selection** to choose the appropriate LLM based on prompt complexity and conversation length. The system prompt is built dynamically for each page.
+
+### Core principles
+
+From `backend/internal/ai/prompt.go:10-31`:
+
+- **Read-only assistant**: Never claims to modify bookings, itinerary, or finance data
+- **Transparent about uncertainty**: States when data is missing, stale, or degraded
+- **Page-aware guidance**: Uses `pageKey` to provide contextual recommendations
+- **Concise and decision-oriented**: Focuses on tradeoffs and next steps
+- **Natural tone**: Avoids robotic templates, matches user energy
+
+### Degraded mode
+
+When live data sources fail (e.g., flight status API is down), the AI enters **degraded mode**. It continues to provide guidance but prepends a confidence note and avoids overconfident language.
+
+Example fallback from `backend/internal/ai/service.go:258-278`:
+
+```
+For Berlin to Munich, I can't fetch live transit suggestions right now, but FlixBus is commonly an option on this corridor. Next actions: 1) check FlixBus for your exact date/time, 2) compare against rail duration/price, 3) pick the best reliability-cost tradeoff.
+```
+
+## Real-time context refresh
+
+The AI can fetch live data to enhance recommendations. This happens automatically when you enable **refresh mode** in your chat request.
+
+### Supported real-time sources
+
+From `backend/internal/ai/service.go:322-369`:
+
+| Page Key | Source | Required Input | Example |
+|----------|--------|----------------|----------|
+| `flights` | `next_flight_status` | Flight number + date | "AA1234 2025-06-15" |
+| `transit` | `next_transit_suggest` | Origin + destination | "from Berlin to Munich" |
+| `finance` | `finance_guardrail` | Current trip totals | Auto-computed |
+| `itinerary` | `itinerary_risk` | Current snapshot | Auto-derived |
+
+<Note>
+If required inputs are missing, the AI skips the real-time fetch and provides guidance based on trip context alone.
+</Note>
+
+## Suggested actions
+
+Every AI response includes **suggested actions** tailored to the current page. These are hardcoded recommendations from `backend/internal/ai/service.go:394-405`.
+
+Examples:
+
+- **Flights**: "Share exact flight number and date for live status", "Compare price-time tradeoff before selecting"
+- **Transit**: "Provide 'from X to Y' for route options", "Save top route to itinerary notes"
+- **Finance**: "Review highest-spend category", "Set per-day budget target"
+
+## Using the AI panel
+
+The AI panel is accessible from every trip page in `frontend/components/trips/trip-ai-panel.tsx`.
+
+<Steps>
+  <Step title="Open the panel">
+    Click the AI icon in the bottom-right corner of any trip page. The panel slides in from the right.
+  </Step>
+  
+  <Step title="Ask a question">
+    Type your question or request in the text area. Use Cmd+Enter (Mac) or Ctrl+Enter (Windows) to send.
+    
+    Example prompts:
+    - "What is my next best step?"
+    - "Compare FlixBus vs rail from Berlin to Munich"
+    - "Am I over budget?"
+  </Step>
+  
+  <Step title="Review context used">
+    After the AI responds, expand the **Context used** section to see which data sources were consulted:
+    - `trip_db_context`: Core trip data (destination, dates, budget)
+    - `next_flight_status`: Live flight status (if applicable)
+    - `next_transit_suggest`: Live transit options (if applicable)
+    
+    Each source shows its status (`ok`, `error`, `skipped_missing_inputs`) and fetch timestamp.
+  </Step>
+</Steps>
+
+### Context passed to AI
+
+From `frontend/components/trips/trip-ai-panel.tsx:40-46`, the AI receives:
+
+- `tripId`: Current trip identifier
+- `pageKey`: Current page (e.g., "flights", "finance")
+- `pageContext`: Page-specific metadata (title, subtitle, path, details)
+- `messages`: Full conversation history
+- `refresh`: Boolean to enable real-time data fetching
+
+## Best practices
+
+- **Be specific**: Include flight numbers, dates, and route details for best results
+- **Ask for tradeoffs**: Instead of "best flight", try "compare price vs duration for morning flights"
+- **Check sources**: Review the **Context used** section to understand data freshness
+- **Use natural language**: The AI is trained to handle conversational input, not rigid commands
+- **Iterate**: Follow up with clarifying questions to refine recommendations
+
+## Limitations
+
+- **Read-only**: The AI cannot modify your trip data, bookings, or expenses
+- **No booking confirmations**: It will never claim to have made a reservation or purchase
+- **Live data availability**: Real-time sources may be unavailable (degraded mode activates automatically)
+- **Token limits**: Very long conversations may hit model context limits
+
+## Technical implementation
+
+The AI service is implemented in Go at `backend/internal/ai/service.go` and uses:
+
+- **Model selection**: `ModelSelector` chooses the LLM based on prompt characteristics
+- **Conversation storage**: All messages are persisted in the database via `AIRepository`
+- **Audit logging**: Every AI interaction is logged with `tripId`, `pageKey`, `model`, and `degraded` status
+- **Context snapshots**: Page context is saved to enable future conversation replay
+
+Frontend integration at `frontend/components/trips/trip-ai-panel.tsx` handles:
+
+- Real-time streaming (if enabled)
+- Message display with role-based styling
+- Error handling and retry logic
+- Source attribution and timestamp formatting

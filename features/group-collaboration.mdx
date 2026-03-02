@@ -1,0 +1,290 @@
+---
+title: Group travel and collaboration
+description: Coordinate multi-traveler trips with role-based access, approvals, and split management
+---
+
+TripLoom's group collaboration features help coordinate travel with multiple people. From role-based permissions to expense splits, the platform reduces coordination overhead for shared trips.
+
+## Group trip detection
+
+A trip is automatically marked as a **group trip** when the traveler count exceeds 1. This enables group-specific features across the platform.
+
+From `frontend/components/trips/pages/overview-page-content.tsx:86-92`:
+
+```typescript
+updateTrip(trip.id, {
+  destination,
+  startDate,
+  endDate,
+  travelers,
+  isGroupTrip: travelers > 1,
+  totalDays,
+})
+```
+
+## Group page overview
+
+The group page (`frontend/components/trips/pages/group-page-content.tsx`) provides centralized access to collaboration controls.
+
+### Current capabilities
+
+<Accordion title="Members and roles">
+  **Purpose**: Manage who can view, edit, or approve trip decisions.
+  
+  **Roles**:
+  - **Owner**: Full control, can delete trip and manage members
+  - **Editor**: Can modify itinerary, flights, hotels, and expenses
+  - **Viewer**: Read-only access to all trip data
+  
+  **Use case**: Assign one person as trip owner, grant editing rights to co-planners, and invite others as viewers for transparency.
+</Accordion>
+
+<Accordion title="Approvals queue">
+  **Purpose**: Track pending votes and decisions that require group consensus.
+  
+  **Workflow**:
+  1. Editor proposes a change (e.g., hotel selection, itinerary adjustment)
+  2. Proposal enters approvals queue
+  3. Members vote or comment
+  4. Once approved, editor can apply the change
+  
+  **Status**: The queue shows `trip.approvalsPending` count from the trip object.
+</Accordion>
+
+<Accordion title="Split rules">
+  **Purpose**: Configure how expenses are divided among travelers.
+  
+  **Modes**:
+  - **Equal split**: Divide evenly across all travelers
+  - **Custom split**: Assign specific amounts per traveler
+  
+  **Integration**: Split rules apply to all expenses added in the finance page.
+</Accordion>
+
+## Invite and share
+
+From `frontend/components/trips/pages/overview-page-content.tsx:172-177`:
+
+<Steps>
+  <Step title="Navigate to overview">
+    Open the trip overview page where the **Share** and **Invite** buttons are visible.
+  </Step>
+  
+  <Step title="Click Invite">
+    The **Invite** button (with `UserPlusIcon`) opens the invite dialog.
+  </Step>
+  
+  <Step title="Enter email and role">
+    Specify the invitee's email and assign a role (Owner, Editor, Viewer).
+  </Step>
+  
+  <Step title="Send invitation">
+    The invitee receives an email with a secure link to join the trip.
+  </Step>
+</Steps>
+
+### Shareable links
+
+The **Share** button generates a read-only link for quick access without account requirements. Useful for sharing trip details with family or friends who don't need editing rights.
+
+## Finance group mode
+
+The finance page includes a **group mode toggle** that changes how budgets and splits are calculated.
+
+### Enabling group mode
+
+From `frontend/components/trips/pages/finance-page-content.tsx:406-414`:
+
+<Steps>
+  <Step title="Open budget settings">
+    Navigate to Finance → Budget Settings.
+  </Step>
+  
+  <Step title="Toggle group mode">
+    Enable the "Group mode" switch.
+  </Step>
+  
+  <Step title="Set group size">
+    Enter the number of people sharing expenses. This can differ from the traveler count if only some people are splitting costs.
+  </Step>
+</Steps>
+
+### How group mode affects calculations
+
+- **Traveler count**: Uses `finance.groupSize` instead of `trip.travelers` when group mode is enabled
+- **Per-person estimates**: Divides budget and expenses by group size
+- **Split validation**: Ensures custom splits sum to the expense total across all group members
+
+From `frontend/components/trips/pages/finance-page-content.tsx:159-160`:
+
+```typescript
+const travelerCount = finance.groupModeEnabled ? finance.groupSize : Math.max(1, trip.travelers)
+const travelers = React.useMemo(() => buildTravelers(travelerCount), [travelerCount])
+```
+
+## Expense split management
+
+Every expense can be split equally or custom-allocated among travelers.
+
+### Equal split
+
+Divides the expense evenly across all travelers. This is the default mode.
+
+**Example**: A $300 hotel cost with 3 travelers splits to $100 per person.
+
+### Custom split
+
+Allows specifying exact amounts per traveler. Useful when costs are uneven (e.g., one person books a single room, others share).
+
+**Validation**: The sum of custom splits must equal the total expense amount within 1 cent.
+
+From `frontend/components/trips/pages/finance-page-content.tsx:314-324`:
+
+```typescript
+if (draft.splitMode === "custom") {
+  const sum = travelers.reduce(
+    (total, traveler) => total + Number(draft.splits[traveler.id] ?? 0),
+    0
+  )
+  if (Math.abs(sum - amount) > 0.01) {
+    return "Custom split must add up to the expense total."
+  }
+}
+```
+
+### Hotel cost allocator
+
+The **Hotel Split** tool automates expense division across trip days.
+
+<Steps>
+  <Step title="Open hotel allocator">
+    Navigate to Finance → Hotel Split.
+  </Step>
+  
+  <Step title="Enter stay details">
+    - **Full stay price**: Total cost for entire booking
+    - **Price entered for**: Select "One person", "X people", or "Entire booking total"
+    - **People count**: Number of travelers sharing the hotel (if applicable)
+    - **Nights/Days**: Duration to split across
+    - **Start date**: First day of hotel stay
+  </Step>
+  
+  <Step title="Apply split">
+    The system creates one expense per day/night, dividing the total cost evenly. Each expense is labeled "Hotel stay 1/N", "Hotel stay 2/N", etc.
+  </Step>
+</Steps>
+
+**How it works** (`frontend/components/trips/pages/finance-page-content.tsx:431-491`):
+
+1. Calculates booking total based on pricing mode
+2. Deletes any existing auto-generated hotel expenses (identified by `[hotel_allocator_v1]` prefix in notes)
+3. Splits total into equal cents per day/night
+4. Creates individual expenses with proper date offsets
+
+## Itinerary collaboration
+
+The itinerary calendar supports multi-user editing with visual status tracking.
+
+### Status filters
+
+- **Planned**: Confirmed activities
+- **To Do**: Items requiring action or booking
+- **Finished**: Completed activities (useful during or after the trip)
+
+From `frontend/components/trips/pages/itinerary-page-content.tsx:100-104`:
+
+```typescript
+const STATUS_OPTIONS: Array<{ key: ItineraryStatus; label: string }> = [
+  { key: "planned", label: "Planned" },
+  { key: "todo", label: "To Do" },
+  { key: "finished", label: "Finished" },
+]
+```
+
+### Drag-and-drop coordination
+
+Editors can drag itinerary items to adjust timing. Changes are reflected in real-time for all collaborators once saved.
+
+**Calendar modes**:
+
+- **Month view**: Overview of entire trip
+- **Week view**: Detailed daily planning
+- **Day view**: Hour-by-hour scheduling (recommended for mobile)
+- **Agenda view**: List of all scheduled items
+
+## AI group recommendations
+
+The AI copilot provides group-specific guidance on the group page.
+
+From `backend/internal/ai/prompt.go:103-105`:
+
+> **Group**: Prioritize decisions that reduce coordination overhead and clarify ownership/approvals. Suggest explicit owner + deadline for each next action.
+
+**Example AI recommendations**:
+
+- "Assign hotel booking to Sarah with approval by Friday"
+- "Split daily itinerary planning: Alex owns Day 1-3, Jordan owns Day 4-6"
+- "Set budget cutback vote deadline to reduce back-and-forth"
+
+## Trip progress tracking
+
+The overview page shows trip progress across all group members. Progress is calculated based on completion of essential tasks:
+
+- Trip basics (destination, dates, travelers)
+- Flights selected
+- Hotels booked
+- Itinerary planned
+- Transit confirmed
+- Finance budget set
+
+From `frontend/components/trips/pages/overview-page-content.tsx:183-191`:
+
+```tsx
+<div className="mb-2 flex flex-wrap gap-2">
+  {progressSteps.map((step, idx) => {
+    const done = Math.floor((trip.progress / 100) * progressSteps.length) > idx
+    return (
+      <Badge key={step} variant={done ? "secondary" : "outline"}>
+        {step}
+      </Badge>
+    )
+  })}
+</div>
+```
+
+## Best practices for group trips
+
+- **Assign clear roles early**: Designate one owner and divide editing responsibilities
+- **Use approvals for major decisions**: Hotels, flights, and large expenses should go through the approvals queue
+- **Enable group mode in finance**: Ensures accurate per-person budget calculations
+- **Set split rules upfront**: Decide equal vs custom splits before adding expenses
+- **Leverage AI for coordination**: Ask the AI to suggest explicit owners and deadlines for pending tasks
+- **Check "What's Missing" regularly**: The overview page shows incomplete essentials visible to all group members
+
+## Permissions and data access
+
+All group collaboration features respect role-based permissions enforced at the backend level (`backend/internal/ai/service.go:110-116`):
+
+```go
+ok, err := s.repo.IsTripMember(ctx, req.TripID, userID)
+if err != nil {
+    return nil, err
+}
+if !ok {
+    return nil, ErrUnauthorizedTrip
+}
+```
+
+- **Viewers**: Can read all trip data but cannot modify anything
+- **Editors**: Can add/edit itinerary, expenses, and transit; cannot delete trip or manage members
+- **Owners**: Full access including trip deletion and member management
+
+## Future enhancements
+
+Planned group collaboration features:
+
+- Real-time notifications when approvals are requested
+- Comment threads on individual expenses and itinerary items
+- Voting UI with approval thresholds
+- Split settlement summary (who owes whom)
+- Export of split breakdown for external payment apps

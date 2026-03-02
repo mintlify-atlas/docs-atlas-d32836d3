@@ -1,80 +1,246 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get from signup to creating your first trip in under 5 minutes
 ---
 
-## Get started in three steps
+## Overview
 
-Get your documentation site running locally and make your first customization.
+This guide walks you through signing up, creating a trip, searching for flights, and building your first itinerary.
 
-### Step 1: Set up your local environment
+<Steps>
+  <Step title="Sign up for an account">
+    Navigate to `/auth/signup` and create your account with email and password.
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```typescript /home/daytona/workspace/source/frontend/app/auth/signup/page.tsx
+    async function handleSignup(e: React.FormEvent) {
+      e.preventDefault()
+      setError(null)
 
-### Step 2: Deploy your changes
+      if (password !== confirm) {
+        setError("Passwords don't match.")
+        return
+      }
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.")
+        return
+      }
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+      setLoading(true)
+      const supabase = createClient()
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        return
+      }
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+      setSuccess(true)
+      setLoading(false)
+    }
+    ```
 
-### Step 3: Go live
+    <Note>
+      Check your email for a confirmation link. Click it to activate your account, then sign in at `/auth/login`.
+    </Note>
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Create your first trip">
+    After signing in, you'll land on the **Dashboard** at `/dashboard`. Click **Create Trip** to start planning.
+
+    ### Trip creation form
+
+    - **Destination**: Search for a city or country (e.g., "Tokyo, Japan")
+    - **Date mode**: Choose `exact`, `weekend`, or `flexible`
+    - **Travelers**: Select `solo` or `group`
+
+    ```typescript /home/daytona/workspace/source/frontend/components/dashboard-home/new-trip-card.tsx
+    const handleCreateTrip = () => {
+      const destination = draft.destination.trim()
+      if (!destination) {
+        toast.error("Enter a destination first.")
+        return
+      }
+
+      const slug = destination
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+      const id = `${slug || "trip"}-${Date.now().toString(36)}`
+
+      const trip = createTrip({
+        id,
+        destination,
+        dateMode: draft.dateMode,
+        travelers: draft.travelers,
+      })
+
+      clearNewTripDraft()
+      toast.success("Trip created.")
+      router.push(`/trips/${trip.id}`)
+    }
+    ```
+
+    The trip is saved to Supabase and you're redirected to the trip overview page.
+  </Step>
+
+  <Step title="Search for flights">
+    Navigate to the **Flights** tab (`/trips/[tripId]/flights`) to search for options.
+
+    ### Search setup
+
+    1. Select **one-way**, **round-trip**, or **multi-city**
+    2. Choose origin and destination airports from the dropdown
+    3. Pick departure (and return) dates
+    4. Set number of passengers
+    5. Click **Search flights**
+
+    TripLoom calls the SerpAPI integration to fetch live flight offers from Google Flights.
+
+    ```typescript /home/daytona/workspace/source/frontend/app/api/flights/serp/search/route.ts
+    export async function POST(request: Request) {
+      const apiKey = getSerpApiKey()
+      const body = await request.json()
+      const slices = body.slices // [{ origin, destination, departure_date }]
+
+      const params = new URLSearchParams({
+        engine: "google_flights",
+        api_key: apiKey,
+        departure_id: slices[0].origin,
+        arrival_id: slices[0].destination,
+        outbound_date: slices[0].departure_date,
+        adults: String(body.adults || 1),
+        currency: "USD",
+      })
+
+      const res = await fetch(`${SERPAPI_BASE}?${params.toString()}`)
+      const data = await res.json()
+
+      return NextResponse.json({ ok: true, offers: data?.best_flights ?? [] })
+    }
+    ```
+
+    ### Reviewing results
+
+    Results display in a sortable table with columns:
+
+    - **Route**: Origin → Destination
+    - **Date**: Departure date
+    - **Departure / Arrival**: Local times
+    - **Duration**: Flight duration
+    - **Stops**: Number of layovers
+    - **Cost**: Total price in USD
+    - **Airline**: Operating carrier
+
+    Click an offer row to expand segment details, then click **Save this flight** to add it to your trip.
+  </Step>
+
+  <Step title="Build your itinerary">
+    Go to the **Itinerary** tab (`/trips/[tripId]/itinerary`) to plan your day-by-day schedule.
+
+    ### Adding itinerary items
+
+    1. Click **Add Item**
+    2. Fill in the form:
+       - **Title**: e.g., "Senso-ji Temple Visit"
+       - **Location**: e.g., "Asakusa, Tokyo"
+       - **Day**: Select which day of your trip
+       - **Time block**: Morning, afternoon, or evening
+       - **Status**: Planned, todo, or finished
+       - **Category**: Sightseeing, food, commute, activities, etc.
+       - **Start/End time**: Local date-time for the activity
+       - **Notes**: Optional details
+    3. Click **Add item**
+
+    ```typescript /home/daytona/workspace/source/frontend/lib/trips.ts
+    export type TripItineraryItem = {
+      id: string
+      tripId: string
+      dayIndex: number // 1-based day index
+      timeBlock: ItineraryTimeBlock
+      status: ItineraryStatus
+      category: ItineraryCategory
+      title: string
+      locationLabel: string
+      startTimeLocal?: string // ISO 8601 local datetime
+      endTimeLocal?: string
+      notes?: string
+      sortOrder: number
+      createdAt: string
+      updatedAt: string
+    }
+    ```
+
+    ### Drag-and-drop scheduling
+
+    The itinerary page uses **React Big Calendar** with drag-and-drop. You can:
+
+    - Drag events to different days or times
+    - Resize events to adjust duration
+    - Click a time slot to create a new item
+    - Filter by status (planned/todo/finished)
+
+    All changes are local until you click **Save Changes**.
+
+    <Warning>
+      Unsaved changes are discarded if you navigate away. Always click **Save Changes** before leaving the page.
+    </Warning>
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card
+    title="Configure authentication"
+    icon="lock"
+    href="/authentication"
+  >
+    Learn how Supabase Auth is integrated and how to customize it
+  </Card>
+  <Card
+    title="Explore flight features"
+    icon="plane"
+    href="/features/flights"
+  >
+    Deep dive into flight search, status tracking, and booking
+  </Card>
+  <Card
+    title="Build advanced itineraries"
+    icon="calendar-days"
+    href="/features/itinerary"
+  >
+    Export to Google Calendar, manage categories, and optimize your schedule
+  </Card>
+  <Card
+    title="Set up group travel"
+    icon="users"
+    href="/features/group"
+  >
+    Invite travelers, manage approvals, and split expenses
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="Email confirmation not arriving">
+    Check your spam folder. If using a test/dev Supabase project, confirmation emails may be delayed. You can manually confirm users in the Supabase dashboard under **Authentication > Users**.
+  </Accordion>
+  <Accordion title="Flight search returns no results">
+    Verify that:
+    - `SERPAPI_API_KEY` is set in your `.env.local`
+    - You selected airports (not just cities) from the dropdown
+    - Departure date is in the future
+    - Origin and destination are different
+  </Accordion>
+  <Accordion title="Itinerary changes not saving">
+    Ensure you clicked **Save Changes** before navigating away. The itinerary editor keeps a local draft until explicitly saved.
+  </Accordion>
+</AccordionGroup>

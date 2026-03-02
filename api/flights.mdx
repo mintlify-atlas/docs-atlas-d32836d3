@@ -1,0 +1,574 @@
+---
+title: Flight API endpoints
+description: Search for flights, get booking options, explore destinations, and check flight status
+---
+
+## Search flights
+
+<Card title="POST /api/flights/serp/search" icon="magnifying-glass">
+  Search for flight offers using SerpAPI integration with Google Flights data.
+</Card>
+
+### Request
+
+**Authentication:** None required (internal API)
+
+**Headers:**
+- `Content-Type`: application/json
+
+**Body parameters:**
+
+<ParamField body="slices" type="array">
+  Array of flight slices (up to 6). Either provide this or `origin`, `destination`, and `departure_date`.
+  <Expandable title="Slice object">
+    <ParamField body="origin" type="string" required>
+      3-letter IATA airport code (e.g., "JFK")
+    </ParamField>
+    <ParamField body="destination" type="string" required>
+      3-letter IATA airport code (e.g., "LAX")
+    </ParamField>
+    <ParamField body="departure_date" type="string" required>
+      Departure date in YYYY-MM-DD format
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="origin" type="string">
+  3-letter IATA airport code for one-way or round-trip search
+</ParamField>
+
+<ParamField body="destination" type="string">
+  3-letter IATA airport code for one-way or round-trip search
+</ParamField>
+
+<ParamField body="departure_date" type="string">
+  Departure date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="return_date" type="string">
+  Return date in YYYY-MM-DD format (for round-trip)
+</ParamField>
+
+<ParamField body="adults" type="number" default="1">
+  Number of adult passengers (1-10)
+</ParamField>
+
+<ParamField body="cabin_class" type="string">
+  Cabin class preference
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="offers" type="array">
+  Array of flight offers
+  <Expandable title="FlightOffer object">
+    <ResponseField name="id" type="string">
+      Unique offer identifier
+    </ResponseField>
+    <ResponseField name="totalAmount" type="string">
+      Total price amount
+    </ResponseField>
+    <ResponseField name="totalCurrency" type="string">
+      Currency code (e.g., "USD")
+    </ResponseField>
+    <ResponseField name="owner" type="object">
+      <Expandable title="Airline info">
+        <ResponseField name="name" type="string">
+          Airline name
+        </ResponseField>
+        <ResponseField name="iataCode" type="string">
+          Airline IATA code
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    <ResponseField name="bookUrl" type="string">
+      Direct booking URL (Google Flights)
+    </ResponseField>
+    <ResponseField name="bookingToken" type="string">
+      SerpAPI booking token for resolving direct booking links
+    </ResponseField>
+    <ResponseField name="departureToken" type="string">
+      Token for fetching return flight options
+    </ResponseField>
+    <ResponseField name="slices" type="array">
+      Flight slices (outbound, return)
+    </ResponseField>
+    <ResponseField name="expiresAt" type="string">
+      Offer expiration timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if `ok` is false
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/flights/serp/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "origin": "JFK",
+    "destination": "LAX",
+    "departure_date": "2026-04-15",
+    "return_date": "2026-04-22",
+    "adults": 2
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "offers": [
+    {
+      "id": "serp-0-WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIixcIkxBWFwiLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGxdXSJd",
+      "totalAmount": "298",
+      "totalCurrency": "USD",
+      "owner": {
+        "name": "Delta",
+        "iataCode": ""
+      },
+      "bookUrl": "https://www.google.com/travel/flights?hl=en&departure_id=JFK&arrival_id=LAX&outbound_date=2026-04-15&return_date=2026-04-22&type=1",
+      "departureToken": "WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIixcIkxBWFwiLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGwsbnVsbCxudWxsLG51bGxdXSJd",
+      "slices": [
+        {
+          "origin": {
+            "name": "John F. Kennedy International Airport",
+            "iataCode": "JFK"
+          },
+          "destination": {
+            "name": "Los Angeles International Airport",
+            "iataCode": "LAX"
+          },
+          "duration": "6h 15m",
+          "segments": [
+            {
+              "operatingCarrier": {
+                "name": "Delta",
+                "iataCode": ""
+              },
+              "marketingCarrier": {
+                "name": "Delta",
+                "iataCode": ""
+              },
+              "flightNumber": "DL123",
+              "departingAt": "2026-04-15T08:00:00-04:00",
+              "arrivingAt": "2026-04-15T11:15:00-07:00",
+              "origin": {
+                "name": "John F. Kennedy International Airport",
+                "iataCode": "JFK"
+              },
+              "destination": {
+                "name": "Los Angeles International Airport",
+                "iataCode": "LAX"
+              },
+              "duration": "6h 15m"
+            }
+          ]
+        }
+      ],
+      "expiresAt": ""
+    }
+  ]
+}
+```
+
+### Error responses
+
+<ResponseField name="ok" type="boolean">
+  `false` when error occurs
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error description
+</ResponseField>
+
+**Status codes:**
+- `400` - Invalid request body or parameters
+- `503` - SerpAPI key not configured
+- `502` - SerpAPI service error
+- `500` - Internal server error
+
+---
+
+## Get booking options
+
+<Card title="POST /api/flights/serp/booking-options" icon="ticket">
+  Resolve SerpAPI booking token to direct booking URL and POST data.
+</Card>
+
+### Request
+
+**Authentication:** None required (internal API)
+
+**Body parameters:**
+
+<ParamField body="booking_token" type="string">
+  SerpAPI booking token from search results
+</ParamField>
+
+<ParamField body="departure_token" type="string">
+  SerpAPI departure token (alternative to booking_token)
+</ParamField>
+
+<Note>
+  Provide either `booking_token` or `departure_token`.
+</Note>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  Direct booking URL
+</ResponseField>
+
+<ResponseField name="post_data" type="string | null">
+  POST data for booking form submission
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/flights/serp/booking-options \
+  -H "Content-Type: application/json" \
+  -d '{
+    "booking_token": "WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIixcIkxBWFwiXV0i"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "url": "https://www.google.com/travel/flights/booking?...",
+  "post_data": null
+}
+```
+
+### Error responses
+
+**Status codes:**
+- `400` - Missing token or invalid request
+- `404` - No booking option available
+- `503` - SerpAPI key not configured
+- `502` - SerpAPI service error
+
+---
+
+## Explore destinations
+
+<Card title="POST /api/flights/serp/explore" icon="globe">
+  Find cheapest flights across multiple destinations and dates.
+</Card>
+
+### Request
+
+**Body parameters:**
+
+<ParamField body="origin" type="string" required>
+  3-letter IATA airport code
+</ParamField>
+
+<ParamField body="destination" type="string">
+  Specific 3-letter IATA code (optional). If omitted, searches popular destinations.
+</ParamField>
+
+<ParamField body="date_from" type="string">
+  Start date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="date_to" type="string">
+  End date in YYYY-MM-DD format
+</ParamField>
+
+<ParamField body="num_days" type="number" default="7">
+  Number of days to search (1-14)
+</ParamField>
+
+<ParamField body="adults" type="number" default="1">
+  Number of passengers (1-10)
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="origin" type="string">
+  Origin airport code
+</ResponseField>
+
+<ResponseField name="rows" type="array">
+  Array of flight options
+  <Expandable title="Row object">
+    <ResponseField name="date" type="string">
+      Departure date
+    </ResponseField>
+    <ResponseField name="destination" type="string">
+      Destination IATA code
+    </ResponseField>
+    <ResponseField name="destinationName" type="string">
+      Destination airport/city name
+    </ResponseField>
+    <ResponseField name="offer" type="object">
+      FlightOffer object (same structure as search endpoint)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="overallCheapest" type="object | null">
+  Cheapest flight offer across all results
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/flights/serp/explore \
+  -H "Content-Type: application/json" \
+  -d '{
+    "origin": "JFK",
+    "num_days": 7,
+    "adults": 1
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "origin": "JFK",
+  "rows": [
+    {
+      "date": "2026-03-03",
+      "destination": "LAX",
+      "destinationName": "Los Angeles International Airport",
+      "offer": {
+        "id": "serp-exp-0-token",
+        "totalAmount": "198",
+        "totalCurrency": "USD",
+        "owner": { "name": "United", "iataCode": "" },
+        "bookUrl": "https://www.google.com/travel/flights?...",
+        "slices": []
+      }
+    }
+  ],
+  "overallCheapest": {
+    "id": "serp-exp-0-token",
+    "totalAmount": "198",
+    "totalCurrency": "USD"
+  }
+}
+```
+
+---
+
+## Get return flights
+
+<Card title="POST /api/flights/serp/return-flights" icon="plane-arrival">
+  Fetch return flight options after selecting outbound flight.
+</Card>
+
+### Request
+
+**Body parameters:**
+
+<ParamField body="departure_token" type="string" required>
+  Departure token from selected outbound flight
+</ParamField>
+
+<ParamField body="outbound_date" type="string" required>
+  Outbound departure date (YYYY-MM-DD)
+</ParamField>
+
+<ParamField body="return_date" type="string" required>
+  Return departure date (YYYY-MM-DD)
+</ParamField>
+
+<ParamField body="arrival_id" type="string" required>
+  3-letter IATA code of trip origin (return destination)
+</ParamField>
+
+<ParamField body="departure_id" type="string" required>
+  3-letter IATA code of trip destination (return origin)
+</ParamField>
+
+<ParamField body="adults" type="number" default="1">
+  Number of passengers (1-10)
+</ParamField>
+
+<ParamField body="outbound_offer_id" type="string">
+  Optional outbound offer ID for reference
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="offers" type="array">
+  Array of return flight offers (FlightOffer structure)
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/flights/serp/return-flights \
+  -H "Content-Type: application/json" \
+  -d '{
+    "departure_token": "WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIl1d",
+    "outbound_date": "2026-04-15",
+    "return_date": "2026-04-22",
+    "arrival_id": "JFK",
+    "departure_id": "LAX",
+    "adults": 2
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "offers": [
+    {
+      "id": "serp-return-outbound-0-token",
+      "totalAmount": "289",
+      "totalCurrency": "USD",
+      "owner": { "name": "American", "iataCode": "" },
+      "departureToken": "token-value",
+      "slices": []
+    }
+  ]
+}
+```
+
+---
+
+## Check flight status
+
+<Card title="POST /api/flights/status" icon="plane-departure">
+  Get real-time flight status using AeroAPI and Aviationstack.
+</Card>
+
+### Request
+
+**Body parameters:**
+
+<ParamField body="flight_number" type="string" required>
+  Flight number (e.g., "AA123", "DL 456")
+</ParamField>
+
+<ParamField body="departure_date" type="string" required>
+  Departure date in YYYY-MM-DD format
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="flight" type="object">
+  Flight status details
+  <Expandable title="Flight object">
+    <ResponseField name="flightNumber" type="string">
+      Flight number
+    </ResponseField>
+    <ResponseField name="airline" type="string">
+      Airline name
+    </ResponseField>
+    <ResponseField name="airlineLogoUrl" type="string">
+      URL to airline logo image
+    </ResponseField>
+    <ResponseField name="routeFrom" type="string">
+      Origin airport IATA code
+    </ResponseField>
+    <ResponseField name="routeTo" type="string">
+      Destination airport IATA code
+    </ResponseField>
+    <ResponseField name="departureAirportName" type="string">
+      Origin airport name
+    </ResponseField>
+    <ResponseField name="arrivalAirportName" type="string">
+      Destination airport name
+    </ResponseField>
+    <ResponseField name="departureLocal" type="string">
+      Local departure time
+    </ResponseField>
+    <ResponseField name="arrivalLocal" type="string">
+      Local arrival time
+    </ResponseField>
+    <ResponseField name="departureTimezone" type="string">
+      Departure timezone
+    </ResponseField>
+    <ResponseField name="arrivalTimezone" type="string">
+      Arrival timezone
+    </ResponseField>
+    <ResponseField name="duration" type="string">
+      Flight duration (e.g., "5h 30m")
+    </ResponseField>
+    <ResponseField name="terminalGate" type="string">
+      Terminal and gate information
+    </ResponseField>
+    <ResponseField name="stops" type="number">
+      Number of stops
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/api/flights/status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "flight_number": "AA123",
+    "departure_date": "2026-03-15"
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "flight": {
+    "flightNumber": "AA123",
+    "airline": "American Airlines",
+    "airlineLogoUrl": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+    "routeFrom": "JFK",
+    "routeTo": "LAX",
+    "departureAirportName": "John F. Kennedy International Airport",
+    "arrivalAirportName": "Los Angeles International Airport",
+    "departureLocal": "8:00 AM",
+    "arrivalLocal": "11:30 AM",
+    "departureTimezone": "America/New_York",
+    "arrivalTimezone": "America/Los_Angeles",
+    "duration": "6h 30m",
+    "terminalGate": "Dep T8 G12 · Arr T4 G42",
+    "stops": 0
+  }
+}
+```
+
+### Error responses
+
+**Status codes:**
+- `400` - Invalid flight number or date format
+- `404` - Flight not found
+- `503` - Flight status API not configured
+- `500` - Internal server error

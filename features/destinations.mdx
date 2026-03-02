@@ -1,0 +1,226 @@
+---
+title: Destination search and exploration
+description: Search cities and airports with autocomplete powered by Google Flights
+---
+
+TripLoom provides destination search for trip creation, flight booking, and general exploration.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="City search" icon="city">
+    Find cities worldwide with autocomplete
+  </Card>
+  <Card title="Airport search" icon="plane-departure">
+    Search by IATA code or airport name
+  </Card>
+  <Card title="Instant suggestions" icon="bolt">
+    Results appear as you type (2+ characters)
+  </Card>
+  <Card title="SerpAPI integration" icon="magnifying-glass">
+    Powered by Google Flights autocomplete
+  </Card>
+</CardGroup>
+
+## How destination search works
+
+The search input debounces user input (280ms) and queries the API when you type 2 or more characters.
+
+**Endpoint**: `GET /api/destinations/search?q=berlin`
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "ChIJAVkDPzdOqEcRcDteW0YgIQQ",
+      "name": "Berlin",
+      "displayName": "Berlin - Germany",
+      "type": "city",
+      "iataCode": "BER",
+      "cityName": "Berlin",
+      "countryCode": null
+    },
+    {
+      "id": "BER",
+      "name": "Berlin Brandenburg Airport",
+      "displayName": "Berlin Brandenburg Airport (BER), Berlin",
+      "type": "airport",
+      "iataCode": "BER",
+      "cityName": "Berlin",
+      "countryCode": null
+    }
+  ]
+}
+```
+
+<Info>
+City results include the primary airport's IATA code. This allows seamless switching between "Berlin" (city) and "BER" (airport) in flight searches.
+</Info>
+
+## Airports-only mode
+
+When searching for flight origins and destinations, use `airports_only=1` to exclude city results:
+
+**Request**: `GET /api/destinations/search?q=lon&airports_only=1`
+
+**Response**:
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "LHR",
+      "name": "London Heathrow Airport",
+      "displayName": "London Heathrow Airport (LHR), London",
+      "type": "airport",
+      "iataCode": "LHR",
+      "cityName": "London",
+      "countryCode": null
+    },
+    {
+      "id": "LGW",
+      "name": "London Gatwick Airport",
+      "displayName": "London Gatwick Airport (LGW), London",
+      "type": "airport",
+      "iataCode": "LGW",
+      "cityName": "London",
+      "countryCode": null
+    }
+  ]
+}
+```
+
+## Using the search component
+
+The `DestinationSearch` component provides:
+
+- **Autocomplete dropdown** with keyboard navigation (arrow keys, enter, escape)
+- **Value prop** to control the input externally
+- **onChange callback** triggered on input change
+- **onSelect callback** when user picks a suggestion
+- **airportsOnly prop** to filter results
+
+**Example**:
+```tsx
+import { DestinationSearch } from "@/components/dashboard-home/destination-search"
+
+function FlightForm() {
+  const [origin, setOrigin] = useState<string>("")
+
+  return (
+    <DestinationSearch
+      value={origin}
+      onChange={setOrigin}
+      onSelect={(suggestion) => {
+        console.log("Selected:", suggestion.iataCode)
+      }}
+      airportsOnly
+      placeholder="Where from?"
+    />
+  )
+}
+```
+
+<Tip>
+Set `airportsOnly={true}` for flight search forms to ensure users select valid IATA codes.
+</Tip>
+
+## Suggestion structure
+
+Each suggestion from SerpAPI is transformed into:
+
+- **City**: The city name with the first airport's IATA code
+- **Airports**: Each airport in the city as a separate suggestion
+
+**SerpAPI raw response**:
+```json
+{
+  "name": "Berlin",
+  "id": "ChIJAVkDPzdOqEcRcDteW0YgIQQ",
+  "type": "city",
+  "airports": [
+    {
+      "name": "Berlin Brandenburg Airport",
+      "id": "BER",
+      "city": "Berlin"
+    },
+    {
+      "name": "Berlin Tegel Airport",
+      "id": "TXL",
+      "city": "Berlin"
+    }
+  ]
+}
+```
+
+**Transformed**:
+```json
+[
+  {
+    "id": "ChIJAVkDPzdOqEcRcDteW0YgIQQ",
+    "name": "Berlin",
+    "displayName": "Berlin - Germany",
+    "type": "city",
+    "iataCode": "BER",
+    "cityName": "Berlin",
+    "countryCode": null
+  },
+  {
+    "id": "BER",
+    "name": "Berlin Brandenburg Airport",
+    "displayName": "Berlin Brandenburg Airport (BER), Berlin",
+    "type": "airport",
+    "iataCode": "BER",
+    "cityName": "Berlin",
+    "countryCode": null
+  },
+  {
+    "id": "TXL",
+    "name": "Berlin Tegel Airport",
+    "displayName": "Berlin Tegel Airport (TXL), Berlin",
+    "type": "airport",
+    "iataCode": "TXL",
+    "cityName": "Berlin",
+    "countryCode": null
+  }
+]
+```
+
+## Debounce and caching
+
+The component:
+
+- Debounces input for 280ms to reduce API calls
+- Shows "Searching…" while loading
+- Returns up to 20 results (API default)
+- Clears results when input is less than 2 characters
+
+## Error handling
+
+If the API fails:
+
+- The dropdown shows "No destinations found. Try a city or airport name."
+- The search can be retried by continuing to type
+
+<Note>
+Search errors are logged client-side but do not block the UI. Users can still type and retry.
+</Note>
+
+## API configuration
+
+Destination search requires:
+
+- `SERPAPI_API_KEY` (or `SERPAPI_KEY`)
+
+Without this key, the endpoint returns:
+
+```json
+{
+  "ok": false,
+  "error": "Destination search requires SerpAPI key. Set SERPAPI_API_KEY or SERPAPI_KEY in env."
+}
+```
+
+Status code: `503 Service Unavailable`

@@ -1,0 +1,108 @@
+---
+title: API overview
+description: Learn about TripLoom's API architecture, base URLs, and common patterns
+---
+
+## Base URLs
+
+The TripLoom API uses versioned endpoints with the `/v1` prefix:
+
+- **Production**: `https://api.triploom.com/v1`
+- **Development**: `http://localhost:8080/v1`
+
+All API endpoints require authentication except for the health check endpoint.
+
+## API architecture
+
+TripLoom's API is built with:
+
+- **Framework**: Go with Fiber v2
+- **Authentication**: Supabase JWT validation
+- **CORS**: Configured for allowed origins with support for `Authorization` headers
+
+### Endpoints
+
+The API provides the following endpoints:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/v1/ai/chat` | General AI chat interaction |
+| `POST` | `/v1/ai/planner/chat` | Trip planning chat interaction |
+| `GET` | `/v1/ai/conversations/:tripId` | List conversations for a trip |
+| `GET` | `/v1/ai/conversations/:conversationId/messages` | List messages in a conversation |
+| `POST` | `/v1/ai/context/refresh` | Refresh AI context |
+| `GET` | `/healthz` | Health check (no auth required) |
+
+## Request headers
+
+All authenticated requests must include:
+
+```http
+Authorization: Bearer <supabase_jwt_token>
+Content-Type: application/json
+```
+
+<Note>
+The `Authorization` header must use the `Bearer` scheme with a valid Supabase JWT token.
+</Note>
+
+## Response format
+
+All API responses follow a consistent JSON structure:
+
+**Success response:**
+```json
+{
+  "ok": true,
+  "data": {
+    // Response data
+  }
+}
+```
+
+**Error response:**
+```json
+{
+  "ok": false,
+  "error": "error description"
+}
+```
+
+## Error codes
+
+| Status Code | Description |
+|-------------|-------------|
+| `200` | Success |
+| `400` | Bad request |
+| `401` | Unauthorized - invalid or missing authentication |
+| `404` | Resource not found |
+| `500` | Internal server error |
+
+## CORS configuration
+
+The API supports cross-origin requests with the following allowed headers:
+
+- `Origin`
+- `Content-Type`
+- `Accept`
+- `Authorization`
+
+<Warning>
+Ensure your origin is configured in the allowed origins list or requests will be blocked by CORS policy.
+</Warning>
+
+## Health check
+
+The health check endpoint is available without authentication:
+
+```bash
+curl https://api.triploom.com/healthz
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "origins": ["https://app.triploom.com"]
+}
+```

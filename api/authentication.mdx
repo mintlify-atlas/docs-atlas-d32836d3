@@ -1,0 +1,136 @@
+---
+title: Authentication
+description: Authenticate API requests with Supabase JWT tokens
+---
+
+## Overview
+
+TripLoom uses Supabase JWT tokens for API authentication. All requests to `/v1` endpoints must include a valid JWT token in the `Authorization` header.
+
+## Authentication flow
+
+1. User authenticates through Supabase client SDK
+2. Supabase returns a JWT token
+3. Client includes token in API requests
+4. TripLoom API validates token using Supabase JWKS
+
+## Making authenticated requests
+
+Include the JWT token in the `Authorization` header using the `Bearer` scheme:
+
+```bash
+curl -X POST https://api.triploom.com/v1/ai/chat \
+  -H "Authorization: Bearer <your_supabase_jwt_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello"}'
+```
+
+<Note>
+The `Authorization` header is case-insensitive for the `Bearer` prefix, but the token itself is case-sensitive.
+</Note>
+
+## Token validation
+
+The authentication middleware validates tokens by:
+
+1. **Extracting the token** from the `Authorization` header:
+```go
+auth := c.Get("Authorization")
+if !strings.HasPrefix(strings.ToLower(auth), "bearer ") {
+    return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"ok": false, "error": "missing bearer token"})
+}
+tokenString := strings.TrimSpace(auth[7:])
+```
+
+2. **Verifying the signature** using Supabase JWKS:
+```go
+token, err := jwt.Parse(tokenString, m.jwks.Keyfunc)
+if err != nil || !token.Valid {
+    return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"ok": false, "error": "invalid token"})
+}
+```
+
+3. **Validating claims** including issuer and subject:
+```go
+claims, ok := token.Claims.(jwt.MapClaims)
+if !ok {
+    return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"ok": false, "error": "invalid claims"})
+}
+
+if iss, _ := claims["iss"].(string); m.supabaseURL != "" && iss != "" && !strings.HasPrefix(iss, m.supabaseURL) {
+    return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"ok": false, "error": "invalid issuer"})
+}
+
+sub, _ := claims["sub"].(string)
+if sub == "" {
+    return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"ok": false, "error": "missing subject"})
+}
+```
+
+4. **Extracting user ID** from the `sub` claim and storing it in request context:
+```go
+c.Locals("userID", sub)
+```
+
+## Authentication errors
+
+The API returns `401 Unauthorized` with specific error messages:
+
+| Error | Description |
+|-------|-------------|
+| `missing bearer token` | `Authorization` header is missing or doesn't use Bearer scheme |
+| `invalid token` | Token signature is invalid or token is expired |
+| `invalid claims` | Token claims cannot be parsed |
+| `invalid issuer` | Token issuer doesn't match Supabase URL |
+| `missing subject` | Token is missing the `sub` claim (user ID) |
+
+**Error response example:**
+```json
+{
+  "ok": false,
+  "error": "missing bearer token"
+}
+```
+
+<Warning>
+Never expose your Supabase JWT tokens in client-side code, logs, or version control. Tokens should be stored securely and transmitted only over HTTPS.
+</Warning>
+
+## Token claims
+
+Supabase JWT tokens include standard claims:
+
+- `iss` (issuer): Supabase project URL
+- `sub` (subject): User ID (UUID)
+- `aud` (audience): `authenticated`
+- `exp` (expiration): Token expiration timestamp
+- `iat` (issued at): Token creation timestamp
+
+The API extracts the user ID from the `sub` claim and makes it available to all authenticated endpoints.
+
+## Development mode
+
+In development environments where Supabase is not configured, the API uses test user passthrough mode:
+
+```go
+func RequireTestUser(c *fiber.Ctx) error {
+    userID := strings.TrimSpace(c.Get("X-User-Id"))
+    if userID == "" {
+        userID = "local-test-user"
+    }
+    c.Locals("userID", userID)
+    return c.Next()
+}
+```
+
+**Development request example:**
+```bash
+curl -X POST http://localhost:8080/v1/ai/chat \
+  -H "X-User-Id: test-user-123" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Hello"}'
+```
+
+<Note>
+Test user mode is only available in development. Production environments always require valid Supabase JWT tokens.
+</Note>

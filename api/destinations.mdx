@@ -1,0 +1,159 @@
+---
+title: Destination search endpoint
+description: Search for cities and airports using SerpAPI autocomplete
+---
+
+## Search destinations
+
+<Card title="GET /api/destinations/search" icon="plane-departure">
+  Search for travel destinations (cities and airports) using SerpAPI Google Flights autocomplete.
+</Card>
+
+### Request
+
+**Authentication:** None required (internal API)
+
+**Query parameters:**
+
+<ParamField query="q" type="string" required>
+  Search query (minimum 2 characters)
+</ParamField>
+
+<ParamField query="airports_only" type="string">
+  Set to `"1"` or `"true"` to return only airport results
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Indicates if the request was successful
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of destination suggestions (up to 20)
+  <Expandable title="DestinationSuggestion object">
+    <ResponseField name="id" type="string">
+      Unique identifier (IATA code or city ID)
+    </ResponseField>
+    <ResponseField name="name" type="string">
+      Place name
+    </ResponseField>
+    <ResponseField name="displayName" type="string">
+      Formatted display name with context
+    </ResponseField>
+    <ResponseField name="type" type="string">
+      Either `"city"` or `"airport"`
+    </ResponseField>
+    <ResponseField name="iataCode" type="string | null">
+      IATA airport code (null for cities without airports)
+    </ResponseField>
+    <ResponseField name="cityName" type="string | null">
+      City name
+    </ResponseField>
+    <ResponseField name="countryCode" type="string | null">
+      Country code (currently always null)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if `ok` is false
+</ResponseField>
+
+### Example request
+
+```bash
+curl "https://your-domain.com/api/destinations/search?q=paris"
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "ChIJD7fiBh9u5kcRYJSMaMOCCwQ",
+      "name": "Paris",
+      "displayName": "Paris - France",
+      "type": "city",
+      "iataCode": "CDG",
+      "cityName": "Paris",
+      "countryCode": null
+    },
+    {
+      "id": "CDG",
+      "name": "Charles de Gaulle Airport",
+      "displayName": "Charles de Gaulle Airport (CDG), Paris",
+      "type": "airport",
+      "iataCode": "CDG",
+      "cityName": "Paris",
+      "countryCode": null
+    },
+    {
+      "id": "ORY",
+      "name": "Orly Airport",
+      "displayName": "Orly Airport (ORY), Paris",
+      "type": "airport",
+      "iataCode": "ORY",
+      "cityName": "Paris",
+      "countryCode": null
+    }
+  ]
+}
+```
+
+### Example request (airports only)
+
+```bash
+curl "https://your-domain.com/api/destinations/search?q=london&airports_only=1"
+```
+
+### Example response (airports only)
+
+```json
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "LHR",
+      "name": "Heathrow Airport",
+      "displayName": "Heathrow Airport (LHR), London",
+      "type": "airport",
+      "iataCode": "LHR",
+      "cityName": "London",
+      "countryCode": null
+    },
+    {
+      "id": "LGW",
+      "name": "Gatwick Airport",
+      "displayName": "Gatwick Airport (LGW), London",
+      "type": "airport",
+      "iataCode": "LGW",
+      "cityName": "London",
+      "countryCode": null
+    }
+  ]
+}
+```
+
+### Error responses
+
+<ResponseField name="ok" type="boolean">
+  `false` when error occurs
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error description
+</ResponseField>
+
+**Status codes:**
+- `400` - SerpAPI request error
+- `503` - SerpAPI key not configured
+- `502` - SerpAPI service error
+- `500` - Internal server error
+
+**Special cases:**
+- Returns empty `data` array for queries shorter than 2 characters
+- Excludes region-type results (only cities and airports)
+- City results include the first airport's IATA code in `iataCode` field

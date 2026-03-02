@@ -1,0 +1,263 @@
+---
+title: AI planner chat endpoint
+description: AI-powered trip planning assistant
+---
+
+## Chat with trip planner
+
+<Card title="POST /v1/ai/planner/chat" icon="wand-magic-sparkles">
+  Conversational AI assistant for drafting trip plans from user preferences.
+</Card>
+
+### Request
+
+**Authentication:** Required (JWT token)
+
+**Headers:**
+- `Content-Type`: application/json
+- `Authorization`: Bearer `<token>`
+
+**Body parameters:**
+
+<ParamField body="messages" type="array" required>
+  Array of conversation messages
+  <Expandable title="ChatMessage object">
+    <ParamField body="role" type="string" required>
+      Message role: `"user"` or `"assistant"`
+    </ParamField>
+    <ParamField body="content" type="string" required>
+      Message text content
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="plannerContext" type="object">
+  Planner-specific context
+  <Expandable title="Planner context fields">
+    <ParamField body="destination" type="string">
+      Destination name
+    </ParamField>
+    <ParamField body="country" type="string">
+      Country name
+    </ParamField>
+    <ParamField body="cities" type="array">
+      Array of city names or comma-separated string
+    </ParamField>
+    <ParamField body="travelers" type="number | string">
+      Number of travelers
+    </ParamField>
+    <ParamField body="mustDoExperiences" type="string">
+      Must-do activities/experiences
+    </ParamField>
+    <ParamField body="concerns" type="string">
+      Travel concerns or constraints
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<ParamField body="refresh" type="boolean" default="false">
+  Reserved for future use
+</ParamField>
+
+### Response
+
+<ResponseField name="ok" type="boolean" required>
+  Request success status
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Planner response data
+  <Expandable title="PlannerChatResponse object">
+    <ResponseField name="answer" type="string">
+      AI planner response text
+    </ResponseField>
+    <ResponseField name="sources" type="array">
+      Data sources used (typically `[{"name": "planner_context", "status": "ok"}]`)
+    </ResponseField>
+    <ResponseField name="degraded" type="boolean">
+      Whether response is degraded (currently always `false`)
+    </ResponseField>
+    <ResponseField name="plannerDraft" type="object | null">
+      Structured trip plan draft extracted from conversation
+      <Expandable title="PlannerDraft object">
+        <ResponseField name="destination" type="string">
+          Primary destination
+        </ResponseField>
+        <ResponseField name="country" type="string">
+          Country name
+        </ResponseField>
+        <ResponseField name="cities" type="array">
+          Array of city names
+        </ResponseField>
+        <ResponseField name="startDate" type="string">
+          Trip start date (YYYY-MM-DD)
+        </ResponseField>
+        <ResponseField name="endDate" type="string">
+          Trip end date (YYYY-MM-DD)
+        </ResponseField>
+        <ResponseField name="travelers" type="number">
+          Number of travelers
+        </ResponseField>
+        <ResponseField name="budgetTotal" type="number">
+          Total budget amount
+        </ResponseField>
+        <ResponseField name="activities" type="array">
+          Array of activity strings
+        </ResponseField>
+        <ResponseField name="itinerary" type="array">
+          Array of itinerary items
+          <Expandable title="PlannerDraftItem object">
+            <ResponseField name="dayIndex" type="number">
+              Day number (1-indexed)
+            </ResponseField>
+            <ResponseField name="title" type="string">
+              Activity title
+            </ResponseField>
+            <ResponseField name="timeBlock" type="string">
+              Time of day (e.g., `"afternoon"`)
+            </ResponseField>
+            <ResponseField name="category" type="string">
+              Activity category (e.g., `"activities"`)
+            </ResponseField>
+            <ResponseField name="notes" type="string">
+              Additional notes
+            </ResponseField>
+          </Expandable>
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error message if `ok` is false
+</ResponseField>
+
+### Example request
+
+```bash
+curl -X POST https://your-domain.com/v1/ai/planner/chat \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": "I want to visit Paris for 5 days in April with my partner. We love museums and cafes."
+      }
+    ],
+    "plannerContext": {
+      "destination": "Paris",
+      "travelers": 2,
+      "mustDoExperiences": "Louvre Museum, Eiffel Tower, local cafes"
+    }
+  }'
+```
+
+### Example response
+
+```json
+{
+  "ok": true,
+  "data": {
+    "answer": "I can help build a 5-day Paris itinerary focused on museums and cafe culture. I recommend allocating Day 1 for the Louvre (book ahead), Day 2 for Musée d'Orsay and Left Bank cafes, Day 3 for Montmartre and local bistros, Day 4 for Eiffel Tower and Seine walk, and Day 5 for Versailles day trip. Budget around €150-200 per person per day for mid-range accommodations, meals, and attractions. Would you like me to expand on any specific days or add more detail to the activities?",
+    "sources": [
+      {
+        "name": "planner_context",
+        "status": "ok",
+        "fetchedAt": "2026-03-02T14:35:00Z"
+      }
+    ],
+    "degraded": false,
+    "plannerDraft": {
+      "destination": "Paris",
+      "country": "",
+      "cities": ["Paris"],
+      "startDate": "",
+      "endDate": "",
+      "travelers": 2,
+      "budgetTotal": 0,
+      "activities": [
+        "Louvre Museum",
+        "Eiffel Tower",
+        "local cafes"
+      ],
+      "itinerary": [
+        {
+          "dayIndex": 1,
+          "title": "Louvre Museum",
+          "timeBlock": "afternoon",
+          "category": "activities",
+          "notes": "Drafted by Agent planner conversation."
+        },
+        {
+          "dayIndex": 2,
+          "title": "Eiffel Tower",
+          "timeBlock": "afternoon",
+          "category": "activities",
+          "notes": "Drafted by Agent planner conversation."
+        },
+        {
+          "dayIndex": 3,
+          "title": "local cafes",
+          "timeBlock": "afternoon",
+          "category": "activities",
+          "notes": "Drafted by Agent planner conversation."
+        }
+      ]
+    }
+  }
+}
+```
+
+### Example request (follow-up)
+
+```bash
+curl -X POST https://your-domain.com/v1/ai/planner/chat \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "messages": [
+      {
+        "role": "user",
+        "content": "I want to visit Paris for 5 days in April with my partner."
+      },
+      {
+        "role": "assistant",
+        "content": "Great choice! Paris in April is lovely. What are your must-do experiences?"
+      },
+      {
+        "role": "user",
+        "content": "Louvre, Eiffel Tower, and trying authentic French pastries. Budget is around $3000 total."
+      }
+    ],
+    "plannerContext": {
+      "destination": "Paris",
+      "travelers": 2,
+      "mustDoExperiences": "Louvre, Eiffel Tower, French pastries"
+    }
+  }'
+```
+
+### Draft extraction logic
+
+The `plannerDraft` object is extracted from:
+- `plannerContext` fields
+- User messages (regex patterns for dates, traveler count, budget)
+- Assistant response analysis
+
+Returns `null` if no meaningful trip data is detected.
+
+### Error responses
+
+<ResponseField name="ok" type="boolean">
+  `false` when error occurs
+</ResponseField>
+
+<ResponseField name="error" type="string">
+  Error description
+</ResponseField>
+
+**Status codes:**
+- `400` - Invalid input (missing messages)
+- `500` - Internal server error

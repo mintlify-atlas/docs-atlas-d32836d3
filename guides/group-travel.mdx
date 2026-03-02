@@ -1,0 +1,245 @@
+---
+title: Manage group trips
+description: Collaborate with co-travelers using roles, approvals, and split cost management
+---
+
+## Enable group mode
+
+Group features activate when you set up multi-traveler trips.
+
+<Steps>
+  <Step title="Set traveler count">
+    From the Overview page, click **Edit Trip** and set **Travelers** to 2 or more.
+  </Step>
+  
+  <Step title="Enable group mode (Finance)">
+    Navigate to **Finance** → **Budget Settings**. Toggle **Group mode** on.
+  </Step>
+  
+  <Step title="Set group size">
+    Enter the exact number of people sharing costs. This can differ from total travelers if some are not splitting expenses.
+  </Step>
+  
+  <Step title="Save settings">
+    Click **Save Budget**. Group features now appear across all trip pages.
+  </Step>
+</Steps>
+
+<Note>
+  Group mode affects expense splitting and per-person calculations. You can manage group size independently of the traveler count for flexibility.
+</Note>
+
+## Members and roles
+
+The **Group** page displays three role types:
+
+### Owner
+- Full edit permissions across all trip pages
+- Can invite new members
+- Can change member roles
+- Can delete the trip
+
+### Editor
+- Edit flights, hotels, itinerary, and finance
+- Cannot invite new members
+- Cannot delete the trip
+
+### Viewer
+- View-only access to all trip data
+- Cannot make changes
+- Can leave comments (coming soon)
+
+<Tip>
+  Assign Editor role to co-travelers who actively plan. Use Viewer for friends/family who just want to see the itinerary.
+</Tip>
+
+## Invite members
+
+Share trip access with your travel companions:
+
+### Send invitations
+
+<Steps>
+  <Step title="Click invite">
+    From any trip page, click the **Invite** button (user-plus icon) in the header.
+  </Step>
+  
+  <Step title="Enter email">
+    Type the invitee's email address.
+  </Step>
+  
+  <Step title="Select role">
+    Choose **Editor** or **Viewer**. (Only owners can assign Owner role.)
+  </Step>
+  
+  <Step title="Send">
+    Click **Send Invitation**. The recipient gets an email with an access link.
+  </Step>
+</Steps>
+
+### Accept invitations
+
+Recipients:
+1. Check email for the TripLoom invitation
+2. Click the link to open the trip
+3. Sign in or create a TripLoom account
+4. The trip appears in their dashboard with the assigned role
+
+<Warning>
+  Invitation links expire after 7 days. If the link is expired, ask the trip owner to resend.
+</Warning>
+
+## Share read-only links
+
+For quick sharing without requiring accounts:
+
+1. Click **Share** (share-2 icon) in the trip header
+2. Copy the generated public link
+3. Share via text, email, or messaging apps
+
+Anyone with the link can view the trip (read-only, no edits).
+
+<Note>
+  Public links do not require TripLoom accounts. Use this for sharing with people who just need to see dates, flights, or itinerary without editing.
+</Note>
+
+## Approvals queue
+
+Group trips use an approval workflow for major decisions.
+
+### How approvals work
+
+1. A member proposes a change (e.g., booking a specific flight)
+2. The change enters the **Approvals Queue** with status "Pending"
+3. Other members vote:
+   - **Approve** - Agree with the change
+   - **Reject** - Disagree
+   - **Abstain** - No opinion
+4. When majority approves, the change applies automatically
+5. If rejected, the change is discarded
+
+### Items requiring approval
+
+- Flight selection
+- Hotel booking
+- Major itinerary additions (full-day activities)
+- Budget increases
+- Expense splits > $100/person
+
+### View pending approvals
+
+The **Group** page shows:
+- Number of pending votes (badge count)
+- List of items awaiting approval
+- Who proposed each item
+- Current vote count
+
+<Tip>
+  The Overview page displays the pending approvals count in the summary cards. Check regularly to keep planning moving forward.
+</Tip>
+
+## Split cost rules
+
+Control how expenses divide among travelers.
+
+### Equal split (default)
+
+All expenses split evenly among group members:
+- 4 travelers, $200 hotel = $50/person
+- 2 travelers, $80 dinner = $40/person
+
+### Custom split
+
+Set per-person amounts for specific expenses:
+
+<Steps>
+  <Step title="Add expense">
+    In **Finance**, enter an expense and expand **Advanced fields**.
+  </Step>
+  
+  <Step title="Choose custom split">
+    Set **Split mode** to "Custom split".
+  </Step>
+  
+  <Step title="Allocate amounts">
+    Enter the amount each traveler pays. The sum must equal the total expense.
+  </Step>
+  
+  <Step title="Save">
+    Click **Save** (or **Update** if editing). The expense saves with individual shares.
+  </Step>
+</Steps>
+
+**Use custom split for:**
+- Shared meals where people ordered different amounts
+- Hotel rooms with different rates
+- Activities where not everyone participates
+
+<Warning>
+  Custom split validation requires the sum of all splits to match the total expense within $0.01. Fix any mismatch before saving.
+</Warning>
+
+## Collaborate on itinerary
+
+Multiple editors can work on the itinerary simultaneously:
+
+### Real-time updates
+
+- Changes from other members appear after you refresh
+- Unsaved draft changes stay local until you click **Save Changes**
+- If two editors save conflicting changes, the last save wins
+
+### Best practices
+
+1. **Divide planning by day** - Editor A plans Days 1-3, Editor B plans Days 4-6
+2. **Communicate before editing** - Use external chat to coordinate who's working on what
+3. **Save frequently** - Don't let large drafts accumulate (risk of conflicts)
+
+<Note>
+  Live collaborative editing (Google Docs style) is on the roadmap. For now, coordinate manually to avoid overwriting each other's work.
+</Note>
+
+## Expense tracking for groups
+
+### Track who paid
+
+Every expense includes a **Payer** field:
+- Set to the person who made the payment
+- Defaults to "Primary traveler"
+- Used to calculate who owes whom at trip end
+
+### View per-person totals
+
+The Finance page shows:
+- **Total Budget** - Shared budget for entire group
+- **Per Person** - Budget ÷ group size
+- **Spent** - Total across all expenses
+- **Per Person Estimate** - Spent ÷ group size
+
+### Settle balances
+
+After the trip:
+1. Review all expenses in the Finance ledger
+2. Note who paid for each item
+3. Calculate balances:
+   - Each person's total paid
+   - Each person's share (based on splits)
+   - Difference = amount owed or owed to them
+4. Use your preferred payment app to settle
+
+<Tip>
+  Export the expense table to CSV for detailed settlement calculations. Click the three-dot menu in the Finance card and select **Export to CSV**.
+</Tip>
+
+## Group notifications
+
+(Coming soon)
+
+Members will receive notifications for:
+- New invitations
+- Pending approvals needing your vote
+- Approved changes
+- Comments on itinerary items
+- Budget alerts when someone adds a large expense
+
+Notification settings will be configurable in Account Settings.

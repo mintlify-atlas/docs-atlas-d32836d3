@@ -1,0 +1,170 @@
+---
+title: Itinerary builder
+description: Plan your trip timeline with a visual calendar and drag-and-drop scheduling
+---
+
+The itinerary builder helps you organize activities, flights, commutes, and reservations into a day-by-day schedule.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Visual calendar" icon="calendar">
+    Month, week, day, and agenda views with drag-and-drop
+  </Card>
+  <Card title="Time blocks" icon="clock">
+    Morning, afternoon, and evening organization
+  </Card>
+  <Card title="Categories" icon="tags">
+    Flights, commute, activities, food, sightseeing, rest, and more
+  </Card>
+  <Card title="Export to Google Calendar" icon="upload">
+    One-click export for all events
+  </Card>
+</CardGroup>
+
+## Creating itinerary items
+
+Each item includes:
+
+- **Title**: Activity or event name
+- **Location**: Address or place name
+- **Day**: Linked to your trip dates
+- **Time block**: Morning (start of day), afternoon (midday focus), or evening (wind-down)
+- **Start and end times**: Exact datetime in local timezone
+- **Category**: Type of activity (see below)
+- **Status**: Planned, to do, or finished
+- **Notes**: Free-form text for tickets, reminders, queue tips
+- **Links**: Location URL and Google Maps link
+- **Commute details**: Transit info (e.g. "ICE 726, 07:42 to 11:02")
+
+### Categories
+
+- **Outbound flight**: Departure flight
+- **Inbound flight**: Return flight
+- **Commute**: Transit between locations
+- **Activities**: General sightseeing and events
+- **Games**: Sports, arcades, interactive experiences
+- **Food**: Restaurants, cafes, markets
+- **Sightseeing**: Museums, landmarks, tours
+- **Shopping**: Retail, souvenirs
+- **Rest**: Downtime, hotel check-in
+- **Other**: Anything else
+
+<Info>
+Categories have distinct colors in the calendar view to quickly identify activity types.
+</Info>
+
+## Calendar views
+
+### Month view
+
+See your entire trip at a glance. Best for long trips (7+ days).
+
+### Week view
+
+Focus on a single week with hourly detail. Default view for most trips.
+
+### Day view
+
+Hourly timeline for a single day. Automatically selected on mobile.
+
+### Agenda view
+
+List format showing all events in chronological order. No drag-and-drop in this view.
+
+<Tip>
+On mobile devices (under 768px wide), the calendar automatically switches to day view for better readability.
+</Tip>
+
+## Drag-and-drop scheduling
+
+In month, week, and day views:
+
+- **Drag events** to change start time and date
+- **Resize events** to adjust duration
+- **Click empty slots** to create new items
+- **Click events** to edit details
+
+Changes update the day index and time block automatically based on the new time.
+
+## Status filtering
+
+Filter the calendar by:
+
+- **All**: Show everything
+- **Planned**: Items not yet confirmed
+- **To do**: Confirmed but not completed
+- **Finished**: Completed activities
+
+Filters persist in the URL query string.
+
+## Exporting to Google Calendar
+
+Click "Export All Events" to open each itinerary item in Google Calendar. The platform:
+
+1. Generates a Google Calendar URL for each item
+2. Opens them in sequence (one per 280ms to avoid popup blockers)
+3. Includes title, location, time, and notes in each event
+
+If your browser blocks popups, use "Copy Event Links" to manually open each URL.
+
+**Event link format**:
+```
+https://calendar.google.com/calendar/render?action=TEMPLATE&text=Berlin%20Core%20Sights&dates=20260615T090000Z/20260615T150000Z&details=Tickets%20required&location=Berlin,%20Germany
+```
+
+<Note>
+Google Calendar links are generated client-side. Your itinerary data is never sent to external servers during export.
+</Note>
+
+## Example itinerary item
+
+```json
+{
+  "id": "it-1234567890-abc123",
+  "tripId": "trip-uuid",
+  "dayIndex": 3,
+  "timeBlock": "morning",
+  "status": "planned",
+  "category": "sightseeing",
+  "title": "Museum Island Tour",
+  "locationLabel": "Museumsinsel, Berlin, Germany",
+  "startTimeLocal": "2026-06-17T09:00",
+  "endTimeLocal": "2026-06-17T15:00",
+  "notes": "Book tickets online. Arrive early to avoid queues.",
+  "locationLink": "https://www.museumsinsel-berlin.de/",
+  "googleMapsLink": "https://maps.google.com/?q=Museumsinsel,Berlin",
+  "commuteDetails": "U-Bahn U5 to Museumsinsel",
+  "sortOrder": 1,
+  "createdAt": "2026-05-01T10:00:00Z",
+  "updatedAt": "2026-05-01T10:00:00Z"
+}
+```
+
+## Unsaved changes
+
+The itinerary editor tracks changes in memory. A "Save Changes" button appears when you have unsaved edits. Click "Discard" to revert to the last saved state.
+
+<Tip>
+Changes are not persisted until you explicitly save. This lets you experiment with schedules without affecting your saved itinerary.
+</Tip>
+
+## Date and timezone handling
+
+All times are stored in local datetime format (YYYY-MM-DD HH:MM) without timezone offsets. The trip timezone is displayed in the header for reference.
+
+When you:
+
+- Change the day selector, start and end times update to match the new date
+- Drag an event to a different day, the time of day is preserved
+- Change the time block, default times populate (e.g. morning = 9:00-12:00)
+
+## Validation
+
+The platform validates:
+
+- Title and location are required
+- End time must be after start time
+- Day index must be within trip duration (1 to totalDays)
+
+Invalid items cannot be saved.
