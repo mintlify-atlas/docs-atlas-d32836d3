@@ -136,7 +136,7 @@ description: AI-powered trip planning assistant
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/v1/ai/planner/chat \
+curl -X POST http://localhost:8080/v1/ai/planner/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
   -d '{
@@ -213,7 +213,7 @@ curl -X POST https://your-domain.com/v1/ai/planner/chat \
 ### Example request (follow-up)
 
 ```bash
-curl -X POST https://your-domain.com/v1/ai/planner/chat \
+curl -X POST http://localhost:8080/v1/ai/planner/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{

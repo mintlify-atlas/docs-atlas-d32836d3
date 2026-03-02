@@ -98,7 +98,7 @@ description: Page-aware AI assistant for trip planning context
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/v1/ai/chat \
+curl -X POST http://localhost:8080/v1/ai/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
   -d '{
@@ -147,7 +147,7 @@ curl -X POST https://your-domain.com/v1/ai/chat \
 ### Example request (transit context)
 
 ```bash
-curl -X POST https://your-domain.com/v1/ai/chat \
+curl -X POST http://localhost:8080/v1/ai/chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
   -d '{
@@ -170,9 +170,9 @@ The assistant fetches real-time data based on `pageKey` when `refresh` is `true`
 
 - **`flights`**: Extracts flight number and date from message, calls `/api/flights/status`
 - **`transit`**: Extracts origin/destination from message ("from X to Y" format), calls `/api/transit/suggest`
-- **`finance`**: Uses trip database totals (placeholder)
-- **`itinerary`**: Uses trip database snapshot (placeholder)
-- **`overview`**: Generic trip context
+- **`finance`**: Uses trip database for expense totals and budget data
+- **`itinerary`**: Uses trip database for daily activities and timeline
+- **`overview`**: Generic trip context with destination and dates
 
 ### Error responses
 

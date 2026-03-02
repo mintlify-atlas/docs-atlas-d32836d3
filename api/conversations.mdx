@@ -59,7 +59,7 @@ description: List conversations and messages for AI chat history
 ### Example request
 
 ```bash
-curl https://your-domain.com/v1/ai/conversations/trip_abc123 \
+curl http://localhost:8080/v1/ai/conversations/trip_abc123 \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -162,7 +162,7 @@ curl https://your-domain.com/v1/ai/conversations/trip_abc123 \
 ### Example request
 
 ```bash
-curl "https://your-domain.com/v1/ai/conversations/conv_xyz789/messages?limit=20" \
+curl "http://localhost:8080/v1/ai/conversations/conv_xyz789/messages?limit=20" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
@@ -255,7 +255,7 @@ curl "https://your-domain.com/v1/ai/conversations/conv_xyz789/messages?limit=20"
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/v1/ai/context/refresh \
+curl -X POST http://localhost:8080/v1/ai/context/refresh \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
   -d '{

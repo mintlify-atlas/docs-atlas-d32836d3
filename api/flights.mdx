@@ -110,7 +110,7 @@ description: Search for flights, get booking options, explore destinations, and 
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/flights/serp/search \
+curl -X POST http://localhost:8080/api/flights/serp/search \
   -H "Content-Type: application/json" \
   -d '{
     "origin": "JFK",
@@ -239,7 +239,7 @@ curl -X POST https://your-domain.com/api/flights/serp/search \
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/flights/serp/booking-options \
+curl -X POST http://localhost:8080/api/flights/serp/booking-options \
   -H "Content-Type: application/json" \
   -d '{
     "booking_token": "WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIixcIkxBWFwiXV0i"
@@ -335,7 +335,7 @@ curl -X POST https://your-domain.com/api/flights/serp/booking-options \
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/flights/serp/explore \
+curl -X POST http://localhost:8080/api/flights/serp/explore \
   -H "Content-Type: application/json" \
   -d '{
     "origin": "JFK",
@@ -426,7 +426,7 @@ curl -X POST https://your-domain.com/api/flights/serp/explore \
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/flights/serp/return-flights \
+curl -X POST http://localhost:8080/api/flights/serp/return-flights \
   -H "Content-Type: application/json" \
   -d '{
     "departure_token": "WyJbWyJKRktcIixcIjIwMjYtMDQtMTVcIl1d",
@@ -533,7 +533,7 @@ curl -X POST https://your-domain.com/api/flights/serp/return-flights \
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/flights/status \
+curl -X POST http://localhost:8080/api/flights/status \
   -H "Content-Type: application/json" \
   -d '{
     "flight_number": "AA123",

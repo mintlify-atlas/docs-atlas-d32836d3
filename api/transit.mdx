@@ -91,7 +91,7 @@ description: Get transit route suggestions and search for places
 ### Example request
 
 ```bash
-curl -X POST https://your-domain.com/api/transit/suggest \
+curl -X POST http://localhost:8080/api/transit/suggest \
   -H "Content-Type: application/json" \
   -d '{
     "origin": "Times Square, New York",
@@ -207,7 +207,7 @@ curl -X POST https://your-domain.com/api/transit/suggest \
 ### Example request
 
 ```bash
-curl "https://your-domain.com/api/transit/places/search?q=central%20park"
+curl "http://localhost:8080/api/transit/places/search?q=central%20park"
 ```
 
 ### Example response

@@ -3,49 +3,141 @@ title: Hotel search and booking
 description: Find and book accommodations for your trips
 ---
 
-<Note>
-Hotel search and booking features are currently in development. This page will be updated as the functionality becomes available.
-</Note>
+## Hotel search interface
 
-## Planned features
+TripLoom's hotel search feature helps you find accommodations near your destinations with price comparison and filter options.
 
 <CardGroup cols={2}>
-  <Card title="Hotel search" icon="hotel">
-    Search hotels by destination and dates
+  <Card title="Search by location" icon="map-pin">
+    Enter city name or destination to find hotels
   </Card>
-  <Card title="Price comparison" icon="dollar-sign">
-    Compare rates across booking platforms
+  <Card title="Filter options" icon="sliders">
+    Refine by price, stars, amenities, and distance
   </Card>
-  <Card title="Filters and sorting" icon="sliders">
-    Filter by price, rating, amenities, and location
+  <Card title="View results" icon="hotel">
+    Browse hotels with ratings, prices, and reviews
   </Card>
-  <Card title="Booking management" icon="bookmark">
-    Save hotel options and track reservations
+  <Card title="Save options" icon="bookmark">
+    Add hotels to your trip for comparison
   </Card>
 </CardGroup>
 
-## Current workarounds
+## Search for hotels
 
-While hotel search is being built, you can:
+<Steps>
+  <Step title="Navigate to Hotels page">
+    Open your trip and click **Hotels** in the navigation.
+  </Step>
+  
+  <Step title="Enter destination">
+    Type the city or area where you need accommodation (e.g., "Paris, France").
+  </Step>
+  
+  <Step title="Set dates">
+    Select check-in and check-out dates.
+  </Step>
+  
+  <Step title="Specify guests">
+    Enter number of guests and rooms needed.
+  </Step>
+  
+  <Step title="Search">
+    Click **Search Hotels** to see results.
+  </Step>
+</Steps>
 
-1. Use the **itinerary planner** to add accommodation entries with:
-   - Hotel name and address
-   - Check-in and check-out times
-   - Booking confirmation number
-   - Reference links to your booking
+<Note>
+  Hotel search uses mock data for display and UI testing. Integration with booking APIs is in progress.
+</Note>
 
-2. Add notes in the **trip overview** with hotel details
+## Filter and sort results
 
-3. Use the **finance tracker** to log accommodation costs
+Refine your search using the filters panel:
 
-## Coming soon
+### Price range
+- Move the slider to set minimum and maximum price per night
+- Prices shown in your selected currency
 
-The hotels feature will integrate with accommodation APIs to provide:
+### Star rating
+- Filter by hotel classification (1-5 stars)
+- Select multiple star levels
 
-- Real-time availability
-- Direct booking links
-- Location mapping
-- Review aggregation
-- Price alerts
+### Amenities
+- WiFi, Pool, Gym, Parking
+- Breakfast included, Spa, Restaurant
+- Check amenities to match your needs
 
-Check the roadmap for updates on hotel search availability.
+### Distance from center
+- Filter hotels by proximity to city center
+- Useful for prioritizing location convenience
+
+<Tip>
+  Use the "Best Pick" indicator to identify hotels with the best combination of price, rating, and location.
+</Tip>
+
+## Hotel result cards
+
+Each hotel displays:
+
+- **Hotel name and area**
+- **Star rating** - Classification from 1-5 stars
+- **Guest review score** - Average rating from reviews
+- **Review count** - Number of reviews
+- **Price per night** - Room rate for your dates
+- **Room type** - Standard, Deluxe, Suite, etc.
+- **Amenities** - Icons for WiFi, Pool, Gym, etc.
+- **Distance to center** - How far from city center
+- **Best Pick badge** - Highlighted recommendations
+
+### View details
+
+Click on a hotel card to see:
+- Full amenity list
+- Room photos and descriptions
+- Cancellation policy
+- Guest reviews
+- Location map
+
+## Add hotels to trip
+
+Save promising options for later comparison:
+
+<Steps>
+  <Step title="Browse results">
+    Review the hotel list and identify candidates.
+  </Step>
+  
+  <Step title="Click Add to Trip">
+    On the hotel card, click **Add to Trip**.
+  </Step>
+  
+  <Step title="Confirm selection">
+    The hotel saves to your trip's accommodations list.
+  </Step>
+  
+  <Step title="Compare options">
+    View all saved hotels in the trip overview to make your final decision.
+  </Step>
+</Steps>
+
+## Track hotel bookings
+
+After booking externally:
+
+1. Navigate to **Finance** page
+2. Add the hotel cost as an expense in the "Hotels" category
+3. Use the **Hotel Split** allocator to spread cost across nights
+4. Add booking confirmation details to itinerary notes
+
+<Warning>
+  TripLoom displays hotel search results but does not process payments directly. Book through the hotel's website or third-party booking platforms.
+</Warning>
+
+## Integration roadmap
+
+Planned enhancements:
+- Direct booking API integration
+- Real-time availability checking
+- Price alerts for saved hotels
+- Multi-platform rate comparison
+- Loyalty program integration
